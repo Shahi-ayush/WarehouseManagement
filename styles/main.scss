@@ -1,16 +1,30 @@
 
-//@import "tw-animate-css";
+// //@import "tw-animate-css";
 
- @import "tailwindcss";
-@plugin "@tailwindcss/forms";
-
-
-//@tailwind base;
-// @tailwind components;
- //@tailwind utilities;
+//  @import "tailwindcss";
+// @plugin "@tailwindcss/forms";
 
 
+// //@tailwind base;
+// // @tailwind components;
+//  //@tailwind utilities;
+
+
+// @import "@uploadthing/react/styles.css";
+
+
+
+
+/* Tailwind base, components, and utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tailwind plugins like forms go in tailwind.config.js, not CSS */
+
+/* Uploadthing styles */
 @import "@uploadthing/react/styles.css";
+
 
 
 
