@@ -21,7 +21,7 @@ export default function HomeNavbar() {
 
   const navLinks = [
     { title: "Dashboard", href: "/dashboard/home/overview" },
-    { title: "Getting Started", href: "/dashboard/home/getting-started" },
+    { title: "Stock Overview", href: "/dashboard/home/getting-started" },
     { title: "Recent Updates", href: "/dashboard/home/updates" },
     { title: "Announcements", href: "/dashboard/home/announcements" },
   ];

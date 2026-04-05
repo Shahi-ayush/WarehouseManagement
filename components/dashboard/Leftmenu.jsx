@@ -19,11 +19,13 @@ export default function Leftmenu() {
   const inventoryLinks = [
     { title: "All", href: "/dashboard/inventory" },
     { title: "Items", href: "/dashboard/inventory/items" },
-    { title: "Categories", href: "/dashboard/inventory/categories" },
-    { title: "Brands", href: "/dashboard/inventory/brands" },
+    // { title: "Categories", href: "/dashboard/inventory/categories" },
+    // { title: "Brands", href: "/dashboard/inventory/brands" },
+      { title: "Activities", href: "/dashboard/inventory/actions" },
+
     // { title: "Units", href: "/dashboard/inventory/units" },
-    { title: "Warehouse", href: "/dashboard/inventory/warehouse" },
-    { title: "Supplier", href: "/dashboard/inventory/suppliers" },
+    // { title: "Warehouse", href: "/dashboard/inventory/warehouse" },
+    // { title: "Supplier", href: "/dashboard/inventory/suppliers" },
     { title: "Inventory Adjustment", href: "/dashboard/inventory/adjustments" },
   ];
 
