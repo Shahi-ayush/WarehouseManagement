@@ -47,7 +47,7 @@ export default function NewBrand({ initialData = {}, isUpdate = false }) {
   return (
     <div>
       <FormHeader
-        title={isUpdate ? "Update Brand" : "New Brand"}
+        title={isUpdate ? "Update Existing Brand" : "Create a New Brand"}
         href="/dashboard/inventory/brands"
       />
       <form

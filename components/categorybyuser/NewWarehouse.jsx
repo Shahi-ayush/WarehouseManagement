@@ -29,6 +29,7 @@ export default function NewWarehouse({ initialData = {}, isUpdate = false }) {
     defaultValues: initialData,
   });
 
+
   function redirect() {
     router.push("/dashboard/inventory/warehouse");
   }
@@ -59,7 +60,7 @@ export default function NewWarehouse({ initialData = {}, isUpdate = false }) {
   return (
     <div>
       <FormHeader
-        title={isUpdate ? "Update Warehouse" : "New Warehouse"}
+        title={isUpdate ? "Update Existing Warehouse" : "Create A New Warehouse"}
         href="/dashboard/inventory/warehouse"
       />
       <form

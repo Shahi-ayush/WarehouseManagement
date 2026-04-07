@@ -50,7 +50,7 @@ export default function NewSupplier({ initialData = {}, isUpdate = false }) {
   return (
     <div>
       <FormHeader
-        title={isUpdate ? "Update Supplier" : "New Supplier"}
+        title={isUpdate ? "Update Existing Supplier" : "Create A New Supplier"}
         href="/dashboard/inventory/suppliers"
       />
       <form

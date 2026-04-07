@@ -122,7 +122,7 @@ className='w-full'
 /> */}
 
 <TextInput label="Item Quantity" 
-name="quantity" 
+name="qty" 
 register={register} 
 errors={errors}
 className='w-full'

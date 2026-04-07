@@ -1,311 +1,448 @@
 
 
 // "use client";
-
 // import { useEffect, useState } from "react";
 // import { useRouter } from "next/navigation";
-// import { Card, CardContent } from "@/components/ui/card";
-// import { Button } from "@/components/ui/button";
-// import { motion } from "framer-motion";
-// import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, Tooltip } from "recharts";
 
-// export default function CustomerDashboard() {
-//   const [profile, setProfile] = useState(null);
-//   const [dashboard, setDashboard] = useState({
-//     totalSpent: 0,
-//     totalPaid: 0,
-//     dueBalance: 0,
-//     recentPurchases: [],
-//     recentPayments: [],
-//   });
-//   const [loading, setLoading] = useState(true);
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const router = useRouter();
+// // ── Sub-components ──────────────────────────────────────────
 
-//   useEffect(() => {
-//     const token = localStorage.getItem("token");
-//     if (!token) {
-//       router.push("/customer/login");
-//       return;
-//     }
-
-//     const headers = { Authorization: `Bearer ${token}` };
-
-//     Promise.all([
-//       fetch("/api/customer-auth/profile", { headers }).then(r => r.json()),
-//       fetch("/api/customer-auth/dashboard", { headers }).then(r => r.json()),
-//     ])
-//       .then(([profileData, dashboardData]) => {
-//         setProfile(profileData);
-
-//         setDashboard({
-//           totalSpent: dashboardData.totalSpent || 0,
-//           totalPaid: dashboardData.totalPaid || 0,
-//           dueBalance: dashboardData.dueBalance || 0,
-//           recentPurchases: dashboardData.recentPurchases || [],
-//           recentPayments: dashboardData.recentPayments || [],
-//         });
-
-//         setLoading(false);
-//       })
-//       .catch(() => router.push("/customer/login"));
-//   }, [router]);
-
-//   if (loading) return <p className="p-8 text-center">Loading dashboard...</p>;
-//   if (!profile) return <p className="p-8 text-center">No profile data</p>;
-
-//   // Filter purchases by search term
-//   const filteredPurchases = dashboard.recentPurchases.filter(p =>
-//     p.items.some(i => i.name.toLowerCase().includes(searchTerm.toLowerCase()))
+// function StatCard({ label, value, danger }) {
+//   return (
+//     <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+//       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</p>
+//       <p className={`text-2xl font-medium ${danger ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-gray-100"}`}>
+//         NPR {value.toLocaleString()}
+//       </p>
+//     </div>
 //   );
+// }
 
-//   // Prepare data for charts
-//   const monthlySpending = dashboard.recentPurchases.reduce((acc, p) => {
+// function MethodPill({ method }) {
+//   const styles = {
+//     CASH:   "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+//     BANK:   "bg-blue-100  text-blue-800  dark:bg-blue-900  dark:text-blue-300",
+//     KHALTI: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300",
+//     ESEWA:  "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+//   };
+//   return (
+//     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${styles[method?.toUpperCase()] ?? "bg-gray-100 text-gray-600"}`}>
+//       {method}
+//     </span>
+//   );
+// }
+
+// function StatusPill({ status }) {
+//   const styles = {
+//     paid:    "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+//     partial: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300",
+//     due:     "bg-red-100   text-red-800   dark:bg-red-900   dark:text-red-300",
+//   };
+//   const labels = { paid: "Paid", partial: "Partial", due: "Due" };
+//   return (
+//     <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${styles[status]}`}>
+//       {labels[status]}
+//     </span>
+//   );
+// }
+
+// function BarChart({ purchases }) {
+//   const monthly = purchases.reduce((acc, p) => {
 //     const month = new Date(p.createdAt).toLocaleString("default", { month: "short" });
 //     acc[month] = (acc[month] || 0) + p.total;
 //     return acc;
 //   }, {});
+//   const entries = Object.entries(monthly);
+//   const max = Math.max(...entries.map(([, v]) => v), 1);
 
-//   const spendingData = Object.entries(monthlySpending).map(([month, total]) => ({ month, total }));
-
-//   const paymentMethods = dashboard.recentPayments.reduce((acc, p) => {
-//     acc[p.method] = (acc[p.method] || 0) + p.amount;
-//     return acc;
-//   }, {});
-//   const paymentData = Object.entries(paymentMethods).map(([method, amount]) => ({ method, amount }));
-//   const colors = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"];
+//   if (entries.length === 0) {
+//     return <p className="text-sm text-gray-400 py-4 text-center">No purchase data yet</p>;
+//   }
 
 //   return (
-//     <div className="min-h-screen bg-gray-50 p-6">
-//       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-6xl mx-auto space-y-6">
+//     <div className="flex items-end gap-1.5 h-20">
+//       {entries.map(([month, total], i) => (
+//         <div key={month} className="flex flex-col items-center gap-1 flex-1">
+//           <div
+//             title={`NPR ${total.toLocaleString()}`}
+//             style={{ height: `${Math.round((total / max) * 72)}px` }}
+//             className={`w-full rounded-t transition-all ${
+//               i === entries.length - 1
+//                 ? "bg-blue-500 dark:bg-blue-400"
+//                 : "bg-blue-200 dark:bg-blue-800"
+//             }`}
+//           />
+//           <span className="text-[10px] text-gray-400">{month}</span>
+//         </div>
+//       ))}
+//     </div>
+//   );
+// }
 
-//         {/* Header */}
-//         <div className="flex justify-between items-center">
-//           <div>
-//             <h1 className="text-3xl font-bold">Welcome, {profile.customer?.name}</h1>
-//             <p className="text-gray-500">Customer Dashboard</p>
+// function Card({ title, children }) {
+//   return (
+//     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+//       {title && (
+//         <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-3">
+//           {title}
+//         </p>
+//       )}
+//       {children}
+//     </div>
+//   );
+// }
+
+// // ── Main Dashboard ──────────────────────────────────────────
+
+// export default function CustomerDashboard() {
+//   const [profile, setProfile]     = useState(null);
+//   const [dashboard, setDashboard] = useState({
+//     totalSpent: 0, totalPaid: 0, dueBalance: 0,
+//     recentPurchases: [], recentPayments: [],
+//   });
+//   const [loading, setLoading] = useState(true);
+//   const router = useRouter();
+
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       const token = localStorage.getItem("token");
+//       if (!token) { router.push("/customer/login"); return; }
+//       const headers = { Authorization: `Bearer ${token}` };
+//       try {
+//         const [profileRes, dashboardRes] = await Promise.all([
+//           fetch("/api/customer-auth/profile",   { headers }).then((r) => r.json()),
+//           fetch("/api/customer-auth/dashboard",  { headers }).then((r) => r.json()),
+//         ]);
+//         setProfile(profileRes);
+//         setDashboard({
+//           totalSpent:       dashboardRes.totalSpent       || 0,
+//           totalPaid:        dashboardRes.totalPaid        || 0,
+//           dueBalance:       dashboardRes.dueBalance       || 0,
+//           recentPurchases:  dashboardRes.recentPurchases  || [],
+//           recentPayments:   dashboardRes.recentPayments   || [],
+//         });
+//       } catch {
+//         router.push("/customer/login");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchData();
+//     const interval = setInterval(fetchData, 10000);
+//     return () => clearInterval(interval);
+//   }, [router]);
+
+//   const logout = () => {
+//     localStorage.removeItem("token");
+//     router.push("/customer/login");
+//   };
+
+//   const initials = (name) =>
+//     name ? name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() : "??";
+
+//   const getPurchaseStatus = (purchase) => {
+//     if (dashboard.totalPaid >= dashboard.totalSpent) return "paid";
+//     if (dashboard.dueBalance <= 0) return "paid";
+//     return "due";
+//   };
+
+//   const isVerified = profile?.account?.status === "verified" && profile?.customer;
+
+//   // ── Loading ──
+//   if (loading) return (
+//     <div className="flex items-center justify-center min-h-screen text-sm text-gray-400">
+//       Loading dashboard...
+//     </div>
+//   );
+//   if (!profile) return null;
+
+//   return (
+//     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+
+//       {/* ── Sticky Header ── */}
+//       <header className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+
+//         {/* Left: store identity */}
+//         <div className="flex items-center gap-3">
+//           <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950 flex items-center justify-center text-xl">
+//             🏪
 //           </div>
-//           <Button
-//             className="bg-red-500 text-white hover:bg-red-600"
-//             onClick={() => {
-//               localStorage.removeItem("token");
-//               router.push("/customer/login");
-//             }}
+//           <div>
+//             <p className="text-base font-medium text-gray-900 dark:text-gray-100">
+//               {profile.customer?.name || "My Account"}
+//             </p>
+//             <p className="text-xs text-gray-400 mt-0.5">
+//               {profile.customer?.address || "—"}&nbsp;·&nbsp;{profile.account?.phone}
+//             </p>
+//           </div>
+//         </div>
+
+//         {/* Right: user + logout */}
+//         <div className="flex items-center gap-3">
+//           <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-sm font-medium text-gray-500">
+//             {initials(profile.customer?.name || "")}
+//           </div>
+//           <div className="hidden sm:block">
+//             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+//               {profile.account?.email}
+//             </p>
+//             {isVerified ? (
+//               <span className="text-[11px] px-2 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+//                 Verified
+//               </span>
+//             ) : (
+//               <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+//                 Unverified
+//               </span>
+//             )}
+//           </div>
+//           <button
+//             onClick={logout}
+//             className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:hover:bg-red-950 dark:hover:text-red-400 transition-colors"
 //           >
 //             Logout
-//           </Button>
+//           </button>
 //         </div>
-//            <Card className="rounded-2xl shadow-sm">
-//   <CardContent className="p-6 space-y-4">
-//     <h2 className="text-xl font-semibold">Profile Information</h2>
+//       </header>
 
-//     <div className="flex items-center justify-between">
-//       {/* Profile details */}
-//       <div className="space-y-2">
-//         <p><strong>Email:</strong> {profile.account?.email}</p>
-//         <p><strong>Phone:</strong> {profile.account?.phone}</p>
-//         <p><strong>Address:</strong> {profile.customer?.address || "—"}</p>
+//       {/* ── Body ── */}
+//       <main className="max-w-4xl mx-auto px-6 py-6 space-y-5">
 
-//         {/* ✅ Status badge */}
-//         <p>
-//           <strong>Status:</strong>{" "}
-//           <span
-//             className={`px-2 py-1 rounded-full text-sm font-medium ${
-//               profile.account?.status === "verified" && profile.customer
-//                 ? "bg-green-100 text-green-800"
-//                 : "bg-yellow-100 text-yellow-800"
-//             }`}
-//           >
-//             {profile.account?.status === "verified" && profile.customer
-//               ? "Verified"
-//               : "Unverified"}
-//           </span>
-//         </p>
-//       </div>
-
-//       {/* Profile photo */}
-//       <div className="flex flex-col items-center">
-//         <img
-//           src={profile.customer?.avatarUrl || "/default-avatar.png"}
-//           alt="Profile Photo"
-//           className="w-24 h-24 rounded-full object-cover border border-gray-300 mb-2"
-//         />
-
-//         <input
-//           type="file"
-//           accept="image/*"
-//           id="avatarUpload"
-//           className="hidden"
-//           onChange={async (e) => {
-//             const file = e.target.files?.[0];
-//             if (!file) return;
-
-//             // Preview locally
-//             const reader = new FileReader();
-//             reader.onload = () => {
-//               setProfile((prev) => ({
-//                 ...prev,
-//                 customer: {
-//                   ...prev.customer,
-//                   avatarUrl: reader.result,
-//                 },
-//               }));
-//             };
-//             reader.readAsDataURL(file);
-
-//             // Upload to server
-//             const formData = new FormData();
-//             formData.append("avatar", file);
-
-//             await fetch("/api/customer-auth/upload-avatar", {
-//               method: "POST",
-//               body: formData,
-//             });
-//           }}
-//         />
-
-//         <label
-//           htmlFor="avatarUpload"
-//           className="cursor-pointer mt-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium"
-//         >
-//           {profile.customer?.avatarUrl ? "Change Photo" : "Add Photo"}
-//         </label>
-//       </div>
-//     </div>
-//   </CardContent>
-// </Card>
-
-
-
-//         {/* Stats */}
-//         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-//           <StatCard title="Total Spent" value={dashboard.totalSpent} />
-//           <StatCard title="Total Paid" value={dashboard.totalPaid} />
-//           <StatCard title="Due Balance" value={dashboard.dueBalance} highlight />
-//         </div>
-
-      
-
-//         {/* Charts */}
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//           <Card className="rounded-2xl shadow-sm p-6">
-//             <h2 className="text-xl font-semibold mb-3">Monthly Spending</h2>
-//             <BarChart width={400} height={200} data={spendingData}>
-//               <XAxis dataKey="month" />
-//               <YAxis />
-//               <Tooltip />
-//               <Bar dataKey="total" fill="#36A2EB" />
-//             </BarChart>
-//           </Card>
-
-//           <Card className="rounded-2xl shadow-sm p-6">
-//             <h2 className="text-xl font-semibold mb-3">Payments by Method</h2>
-//             <PieChart width={200} height={200}>
-//               <Pie data={paymentData} dataKey="amount" nameKey="method" cx="50%" cy="50%" outerRadius={80}>
-//                 {paymentData.map((entry, index) => (
-//                   <Cell key={index} fill={colors[index % colors.length]} />
-//                 ))}
-//               </Pie>
-//               <Tooltip />
-//             </PieChart>
-//           </Card>
-//         </div>
-
-     
-//         {/* Purchases Search */}
-//         <div className="mt-4">
-//           <input
-//             type="text"
-//             placeholder="Search purchases by item name..."
-//             value={searchTerm}
-//             onChange={e => setSearchTerm(e.target.value)}
-//             className="w-full p-2 rounded-lg border border-gray-300 mb-4"
-//           />
-//         </div>
-
-//         {/* Activity */}
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//           <ActivityCard title="Recent Purchases" items={filteredPurchases} type="purchase" fixedDetails={true} />
-//           <ActivityCard title="Recent Payments" items={dashboard.recentPayments} type="payment" fixedDetails={true} />
-//         </div>
-
-//       </motion.div>
-//     </div>
-//   );
-// }
-
-// // StatCard component
-// function StatCard({ title, value, highlight }) {
-//   return (
-//     <Card className={`rounded-2xl shadow-sm ${highlight ? "border-red-400" : ""}`}>
-//       <CardContent className="p-6 text-center">
-//         <p className="text-gray-500">{title}</p>
-//         <p className="text-3xl font-bold mt-2">NPR {value}</p>
-//       </CardContent>
-//     </Card>
-//   );
-// }
-
-// // ActivityCard component
-// function ActivityCard({ title, items, type, fixedDetails }) {
-//   return (
-//     <Card className="rounded-2xl shadow-sm">
-//       <CardContent className="p-6">
-//         <h2 className="text-xl font-semibold mb-3">{title}</h2>
-//         {items.length === 0 ? (
-//           <p className="text-gray-500">No records found</p>
-//         ) : (
-//           <ul className="space-y-2">
-//             {items.map(item => (
-//               <li key={item.id} className="border-b pb-2">
-//                 <div className="flex justify-between items-center">
-//                   <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-//                   <span className="font-medium">
-//                     {type === "purchase" ? `NPR ${item.total}` : `NPR ${item.amount}`}
-//                   </span>
-//                 </div>
-
-//                 {/* Fixed Details */}
-//                 {type === "purchase" && item.items && fixedDetails && (
-//                   <div className="mt-2 p-2 bg-gray-50 rounded-lg space-y-1 text-sm text-gray-700">
-//                     <strong>Purchase Details:</strong>
-//                     <ul className="ml-4 list-disc">
-//                       {item.items.map((i, idx) => (
-//                         <li key={idx}>
-//                           {i.name} — Qty: {i.qty}
-//                         </li>
-//                       ))}
-//                     </ul>
-//                     <p className="text-sm text-gray-500 mt-1">
-//                       Total Items: {item.items.reduce((sum, i) => sum + i.qty, 0)}
-//                     </p>
-//                   </div>
-//                 )}
-
-//                 {type === "payment" && fixedDetails && (
-//                   <div className="mt-2 p-2 bg-gray-50 rounded-lg space-y-1 text-sm text-gray-700">
-//                     <p><strong>Payment Method:</strong> {item.method || "—"}</p>
-//                     {item.reference && <p><strong>Reference:</strong> {item.reference}</p>}
-//                   </div>
-//                 )}
-//               </li>
-//             ))}
-//           </ul>
+//         {/* Due alert */}
+//         {dashboard.dueBalance > 0 && (
+//           <div className="flex items-center justify-between px-4 py-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl">
+//             <p className="text-sm text-red-700 dark:text-red-300">
+//               Outstanding balance of{" "}
+//               <span className="font-medium">NPR {dashboard.dueBalance.toLocaleString()}</span>{" "}
+//               — please clear your dues
+//             </p>
+//             <button
+//               onClick={() => router.push("/customer/payment")}
+//               className="text-xs font-medium px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg ml-4 whitespace-nowrap transition-colors"
+//             >
+//               Pay now
+//             </button>
+//           </div>
 //         )}
-//       </CardContent>
-//     </Card>
+
+//         {/* Unverified notice */}
+//         {!isVerified && (
+//           <div className="px-4 py-3 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-700 dark:text-amber-300">
+//             Your account is unverified. Please contact admin to activate your account.
+//           </div>
+//         )}
+
+//         {/* Stats row */}
+//         <div className="grid grid-cols-3 gap-3">
+//           <StatCard label="Total purchased" value={dashboard.totalSpent} />
+//           <StatCard label="Total paid"      value={dashboard.totalPaid} />
+//           <StatCard label="Due balance"     value={dashboard.dueBalance} danger={dashboard.dueBalance > 0} />
+//         </div>
+
+//         {/* Charts row */}
+//         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+//           <Card title="Monthly spending">
+//             <BarChart purchases={dashboard.recentPurchases} />
+//           </Card>
+
+//           <Card title="Recent payments">
+//             {dashboard.recentPayments.length === 0 ? (
+//               <p className="text-sm text-gray-400 py-2 text-center">No payments yet</p>
+//             ) : (
+//               <ul className="space-y-0 divide-y divide-gray-100 dark:divide-gray-800">
+//                 {dashboard.recentPayments.slice(0, 4).map((p) => (
+//                   <li key={p.id} className="flex items-center justify-between py-2">
+//                     <div>
+//                       <p className="text-sm text-gray-600 dark:text-gray-300">
+//                         {new Date(p.createdAt).toLocaleDateString("en-GB", {
+//                           day: "2-digit", month: "short", year: "numeric",
+//                         })}
+//                       </p>
+//                       {p.reference && (
+//                         <p className="text-[11px] text-gray-400 mt-0.5">{p.reference}</p>
+//                       )}
+//                     </div>
+//                     <div className="flex items-center gap-2">
+//                       <MethodPill method={p.method} />
+//                       <span className="text-sm font-medium text-green-700 dark:text-green-400">
+//                         NPR {p.amount.toLocaleString()}
+//                       </span>
+//                     </div>
+//                   </li>
+//                 ))}
+//               </ul>
+//             )}
+//           </Card>
+//         </div>
+
+//         {/* Purchases table */}
+//         <Card title="Recent purchases">
+//           {dashboard.recentPurchases.length === 0 ? (
+//             <p className="text-sm text-gray-400 py-4 text-center">No purchases yet</p>
+//           ) : (
+//             <div className="overflow-x-auto">
+//               <table className="w-full text-sm">
+//                 <thead>
+//                   <tr className="border-b border-gray-100 dark:border-gray-800">
+//                     <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider pb-2 pr-4">Date</th>
+//                     <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider pb-2 pr-4">Items</th>
+//                     <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider pb-2 pr-4">Ref</th>
+//                     <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider pb-2 pr-4">Amount</th>
+//                     <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider pb-2">Status</th>
+//                   </tr>
+//                 </thead>
+//                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+//                   {dashboard.recentPurchases.map((purchase) => (
+//                     <tr key={purchase.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+//                       <td className="py-2.5 pr-4 text-gray-600 dark:text-gray-300 whitespace-nowrap">
+//                         {new Date(purchase.createdAt).toLocaleDateString("en-GB", {
+//                           day: "2-digit", month: "short", year: "numeric",
+//                         })}
+//                       </td>
+//                       <td className="py-2.5 pr-4 text-gray-700 dark:text-gray-200">
+//                         {purchase.items?.map((i) => `${i.name} ×${i.qty}`).join(", ") || "—"}
+//                       </td>
+//                       <td className="py-2.5 pr-4 text-[11px] text-gray-400">
+//                         {purchase.referenceNo || "—"}
+//                       </td>
+//                       <td className="py-2.5 pr-4 font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
+//                         NPR {purchase.total.toLocaleString()}
+//                       </td>
+//                       <td className="py-2.5">
+//                         <StatusPill status={getPurchaseStatus(purchase)} />
+//                       </td>
+//                     </tr>
+//                   ))}
+//                 </tbody>
+//               </table>
+//             </div>
+//           )}
+//         </Card>
+
+//       </main>
+//     </div>
 //   );
 // }
 
 
 "use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, Tooltip } from "recharts";
+
+// ── Sub-components ──────────────────────────────────────────
+
+function StatCard({ label, value, danger }) {
+  return (
+    <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</p>
+      <p
+        className={`text-2xl font-medium ${
+          danger ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-gray-100"
+        }`}
+      >
+        NPR {value.toLocaleString()}
+      </p>
+    </div>
+  );
+}
+
+function MethodPill({ method }) {
+  const styles = {
+    CASH: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+    BANK: "bg-blue-100  text-blue-800  dark:bg-blue-900  dark:text-blue-300",
+    KHALTI: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300",
+    ESEWA: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  };
+  return (
+    <span
+      className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+        styles[method?.toUpperCase()] ?? "bg-gray-100 text-gray-600"
+      }`}
+    >
+      {method}
+    </span>
+  );
+}
+
+// ── New component: SaleStatusPill ───────────────────────────
+function SaleStatusPill({ status }) {
+  const styles = {
+    PENDING: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+    PROCESSING: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+    SHIPPED: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300",
+    OUT_FOR_DELIVERY: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300",
+    DELIVERED: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+    CANCELLED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+  };
+
+  const labels = {
+    PENDING: "Pending",
+    PROCESSING: "Processing",
+    SHIPPED: "Shipped",
+    OUT_FOR_DELIVERY: "Out for Delivery",
+    DELIVERED: "Delivered",
+    CANCELLED: "Cancelled",
+  };
+
+  return (
+    <span
+      className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${
+        styles[status] ?? "bg-gray-100 text-gray-600"
+      }`}
+    >
+      {labels[status] || status}
+    </span>
+  );
+}
+
+function BarChart({ purchases }) {
+  const monthly = purchases.reduce((acc, p) => {
+    const month = new Date(p.createdAt).toLocaleString("default", { month: "short" });
+    acc[month] = (acc[month] || 0) + p.total;
+    return acc;
+  }, {});
+  const entries = Object.entries(monthly);
+  const max = Math.max(...entries.map(([, v]) => v), 1);
+
+  if (entries.length === 0) {
+    return <p className="text-sm text-gray-400 py-4 text-center">No purchase data yet</p>;
+  }
+
+  return (
+    <div className="flex items-end gap-1.5 h-20">
+      {entries.map(([month, total], i) => (
+        <div key={month} className="flex flex-col items-center gap-1 flex-1">
+          <div
+            title={`NPR ${total.toLocaleString()}`}
+            style={{ height: `${Math.round((total / max) * 72)}px` }}
+            className={`w-full rounded-t transition-all ${
+              i === entries.length - 1
+                ? "bg-blue-500 dark:bg-blue-400"
+                : "bg-blue-200 dark:bg-blue-800"
+            }`}
+          />
+          <span className="text-[10px] text-gray-400">{month}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Card({ title, children }) {
+  return (
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+      {title && (
+        <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-3">
+          {title}
+        </p>
+      )}
+      {children}
+    </div>
+  );
+}
+
+// ── Main Dashboard ──────────────────────────────────────────
 
 export default function CustomerDashboard() {
   const [profile, setProfile] = useState(null);
@@ -317,29 +454,22 @@ export default function CustomerDashboard() {
     recentPayments: [],
   });
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    let interval;
-
     const fetchData = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
         router.push("/customer/login");
         return;
       }
-
       const headers = { Authorization: `Bearer ${token}` };
-
       try {
         const [profileRes, dashboardRes] = await Promise.all([
           fetch("/api/customer-auth/profile", { headers }).then((r) => r.json()),
           fetch("/api/customer-auth/dashboard", { headers }).then((r) => r.json()),
         ]);
-
         setProfile(profileRes);
-
         setDashboard({
           totalSpent: dashboardRes.totalSpent || 0,
           totalPaid: dashboardRes.totalPaid || 0,
@@ -347,271 +477,230 @@ export default function CustomerDashboard() {
           recentPurchases: dashboardRes.recentPurchases || [],
           recentPayments: dashboardRes.recentPayments || [],
         });
-
-        setLoading(false);
-      } catch (err) {
+      } catch {
         router.push("/customer/login");
+      } finally {
+        setLoading(false);
       }
     };
 
-    // Fetch immediately on mount
     fetchData();
-
-    // Poll every 10 seconds to auto-refresh profile and dashboard
-    interval = setInterval(fetchData, 10000);
-
+    const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, [router]);
 
-  if (loading) return <p className="p-8 text-center">Loading dashboard...</p>;
-  if (!profile) return <p className="p-8 text-center">No profile data</p>;
+  const logout = () => {
+    localStorage.removeItem("token");
+    router.push("/customer/login");
+  };
 
-  // Filter purchases by search term
-  const filteredPurchases = dashboard.recentPurchases.filter((p) =>
-    p.items.some((i) => i.name.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const initials = (name) =>
+    name
+      ? name
+          .split(" ")
+          .map((w) => w[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase()
+      : "??";
 
-  // Prepare data for charts
-  const monthlySpending = dashboard.recentPurchases.reduce((acc, p) => {
-    const month = new Date(p.createdAt).toLocaleString("default", { month: "short" });
-    acc[month] = (acc[month] || 0) + p.total;
-    return acc;
-  }, {});
+  const isVerified = profile?.account?.status === "verified" && profile?.customer;
 
-  const spendingData = Object.entries(monthlySpending).map(([month, total]) => ({ month, total }));
-
-  const paymentMethods = dashboard.recentPayments.reduce((acc, p) => {
-    acc[p.method] = (acc[p.method] || 0) + p.amount;
-    return acc;
-  }, {});
-
-  const paymentData = Object.entries(paymentMethods).map(([method, amount]) => ({ method, amount }));
-  const colors = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"];
+  // ── Loading ──
+  if (loading)
+    return (
+      <div className="flex items-center justify-center min-h-screen text-sm text-gray-400">
+        Loading dashboard...
+      </div>
+    );
+  if (!profile) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-6xl mx-auto space-y-6"
-      >
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Welcome, {profile.customer?.name || "Customer"}</h1>
-            <p className="text-gray-500">Customer Dashboard</p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+
+      {/* ── Sticky Header ── */}
+      <header className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+
+        {/* Left: store identity */}
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950 flex items-center justify-center text-xl">
+            🏪
           </div>
-          <Button
-            className="bg-red-500 text-white hover:bg-red-600"
-            onClick={() => {
-              localStorage.removeItem("token");
-              router.push("/customer/login");
-            }}
+          <div>
+            <p className="text-base font-medium text-gray-900 dark:text-gray-100">
+              {profile.customer?.name || "My Account"}
+            </p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {profile.customer?.address || "—"} · {profile.account?.phone}
+            </p>
+          </div>
+        </div>
+
+        {/* Right: user + logout */}
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-sm font-medium text-gray-500">
+            {initials(profile.customer?.name || "")}
+          </div>
+          <div className="hidden sm:block">
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {profile.account?.email}
+            </p>
+            {isVerified ? (
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                Verified
+              </span>
+            ) : (
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+                Unverified
+              </span>
+            )}
+          </div>
+          <button
+            onClick={logout}
+            className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:hover:bg-red-950 dark:hover:text-red-400 transition-colors"
           >
             Logout
-          </Button>
+          </button>
         </div>
+      </header>
 
-        {/* Profile Card */}
-     {/* Profile Card */}
-<Card className="rounded-2xl shadow-sm">
-  <CardContent className="p-6 space-y-4">
-    <h2 className="text-xl font-semibold">Profile Information</h2>
+      {/* ── Body ── */}
+      <main className="max-w-4xl mx-auto px-6 py-6 space-y-5">
 
-    <div className="flex items-center justify-between">
-      {/* Profile details */}
-      <div className="space-y-2">
-        <p><strong>Email:</strong> {profile.account?.email}</p>
-        <p><strong>Phone:</strong> {profile.account?.phone}</p>
-        <p><strong>Address:</strong> {profile.customer?.address || "—"}</p>
-
-        {/* Verified / Unverified Badge */}
-        <p>
-          <strong>Status:</strong>{" "}
-          <span
-            className={`px-2 py-1 rounded-full text-sm font-medium ${
-              profile.account?.status === "verified" && profile.customer
-                ? "bg-green-100 text-green-800"
-                : "bg-yellow-100 text-yellow-800"
-            }`}
-          >
-            {profile.account?.status === "verified" && profile.customer
-              ? "Verified"
-              : "Unverified"}
-          </span>
-        </p>
-
-        {/* ✅ Unverified message */}
-        {(!profile.customer || profile.account?.status !== "verified") && (
-          <p className="text-red-600 text-sm mt-1">
-            To verify or approve your account, please contact admin support.
-          </p>
+        {/* Due alert */}
+        {dashboard.dueBalance > 0 && (
+          <div className="flex items-center justify-between px-4 py-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl">
+            <p className="text-sm text-red-700 dark:text-red-300">
+              Outstanding balance of{" "}
+              <span className="font-medium">NPR {dashboard.dueBalance.toLocaleString()}</span>{" "}
+              — please clear your dues
+            </p>
+            <button
+              onClick={() => router.push("/customer/payment")}
+              className="text-xs font-medium px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg ml-4 whitespace-nowrap transition-colors"
+            >
+              Pay now
+            </button>
+          </div>
         )}
-      </div>
 
-      {/* Profile photo */}
-      <div className="flex flex-col items-center">
-        <img
-          src={profile.customer?.avatarUrl || "/default-avatar.png"}
-          alt="Profile Photo"
-          className="w-24 h-24 rounded-full object-cover border border-gray-300 mb-2"
-        />
+        {/* Unverified notice */}
+        {!isVerified && (
+          <div className="px-4 py-3 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-700 dark:text-amber-300">
+            Your account is unverified. Please contact admin to activate your account.
+          </div>
+        )}
 
-        <input
-          type="file"
-          accept="image/*"
-          id="avatarUpload"
-          className="hidden"
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = () => {
-              setProfile((prev) => ({
-                ...prev,
-                customer: {
-                  ...prev.customer,
-                  avatarUrl: reader.result,
-                },
-              }));
-            };
-            reader.readAsDataURL(file);
-
-            const formData = new FormData();
-            formData.append("avatar", file);
-
-            await fetch("/api/customer-auth/upload-avatar", {
-              method: "POST",
-              body: formData,
-            });
-          }}
-        />
-
-        <label
-          htmlFor="avatarUpload"
-          className="cursor-pointer mt-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium"
-        >
-          {profile.customer?.avatarUrl ? "Change Photo" : "Add Photo"}
-        </label>
-      </div>
-    </div>
-  </CardContent>
-</Card>
-
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard title="Total Spent" value={dashboard.totalSpent} />
-          <StatCard title="Total Paid" value={dashboard.totalPaid} />
-          <StatCard title="Due Balance" value={dashboard.dueBalance} highlight />
-        </div>
-
-        {/* Charts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="rounded-2xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-3">Monthly Spending</h2>
-            <BarChart width={400} height={200} data={spendingData}>
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="total" fill="#36A2EB" />
-            </BarChart>
-          </Card>
-
-          <Card className="rounded-2xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-3">Payments by Method</h2>
-            <PieChart width={200} height={200}>
-              <Pie data={paymentData} dataKey="amount" nameKey="method" cx="50%" cy="50%" outerRadius={80}>
-                {paymentData.map((entry, index) => (
-                  <Cell key={index} fill={colors[index % colors.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </Card>
-        </div>
-
-        {/* Purchases Search */}
-        <div className="mt-4">
-          <input
-            type="text"
-            placeholder="Search purchases by item name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-2 rounded-lg border border-gray-300 mb-4"
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-3">
+          <StatCard label="Total purchased" value={dashboard.totalSpent} />
+          <StatCard label="Total paid" value={dashboard.totalPaid} />
+          <StatCard
+            label="Due balance"
+            value={dashboard.dueBalance}
+            danger={dashboard.dueBalance > 0}
           />
         </div>
 
-        {/* Activity */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ActivityCard title="Recent Purchases" items={filteredPurchases} type="purchase" fixedDetails={true} />
-          <ActivityCard title="Recent Payments" items={dashboard.recentPayments} type="payment" fixedDetails={true} />
+        {/* Charts row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          <Card title="Monthly spending">
+            <BarChart purchases={dashboard.recentPurchases} />
+          </Card>
+
+          <Card title="Recent payments">
+            {dashboard.recentPayments.length === 0 ? (
+              <p className="text-sm text-gray-400 py-2 text-center">No payments yet</p>
+            ) : (
+              <ul className="space-y-0 divide-y divide-gray-100 dark:divide-gray-800">
+                {dashboard.recentPayments.slice(0, 4).map((p) => (
+                  <li key={p.id} className="flex items-center justify-between py-2">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {new Date(p.createdAt).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                      {p.reference && (
+                        <p className="text-[11px] text-gray-400 mt-0.5">{p.reference}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MethodPill method={p.method} />
+                      <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                        NPR {p.amount.toLocaleString()}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
         </div>
-      </motion.div>
+
+        {/* Purchases table */}
+        <Card title="Recent purchases">
+          {dashboard.recentPurchases.length === 0 ? (
+            <p className="text-sm text-gray-400 py-4 text-center">No purchases yet</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100 dark:border-gray-800">
+                    <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider pb-2 pr-4">
+                      Date
+                    </th>
+                    <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider pb-2 pr-4">
+                      Items
+                    </th>
+                    <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider pb-2 pr-4">
+                      Ref
+                    </th>
+                    <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider pb-2 pr-4">
+                      Amount
+                    </th>
+                    <th className="text-left text-[11px] font-medium text-gray-400 uppercase tracking-wider pb-2">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {dashboard.recentPurchases.map((purchase) => (
+                    <tr
+                      key={purchase.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    >
+                      <td className="py-2.5 pr-4 text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                        {new Date(purchase.createdAt).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="py-2.5 pr-4 text-gray-700 dark:text-gray-200">
+                        {purchase.items?.map((i) => `${i.name} ×${i.qty}`).join(", ") || "—"}
+                      </td>
+                      <td className="py-2.5 pr-4 text-[11px] text-gray-400">
+                        {purchase.referenceNo || "—"}
+                      </td>
+                      <td className="py-2.5 pr-4 font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                        NPR {purchase.total.toLocaleString()}
+                      </td>
+                      <td className="py-2.5">
+                        <SaleStatusPill status={purchase.status} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+
+      </main>
     </div>
-  );
-}
-
-// StatCard component
-function StatCard({ title, value, highlight }) {
-  return (
-    <Card className={`rounded-2xl shadow-sm ${highlight ? "border-red-400" : ""}`}>
-      <CardContent className="p-6 text-center">
-        <p className="text-gray-500">{title}</p>
-        <p className="text-3xl font-bold mt-2">NPR {value}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-// ActivityCard component
-function ActivityCard({ title, items, type, fixedDetails }) {
-  return (
-    <Card className="rounded-2xl shadow-sm">
-      <CardContent className="p-6">
-        <h2 className="text-xl font-semibold mb-3">{title}</h2>
-        {items.length === 0 ? (
-          <p className="text-gray-500">No records found</p>
-        ) : (
-          <ul className="space-y-2">
-            {items.map((item) => (
-              <li key={item.id} className="border-b pb-2">
-                <div className="flex justify-between items-center">
-                  <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-                  <span className="font-medium">
-                    {type === "purchase" ? `NPR ${item.total}` : `NPR ${item.amount}`}
-                  </span>
-                </div>
-
-                {/* Fixed Details */}
-                {type === "purchase" && item.items && fixedDetails && (
-                  <div className="mt-2 p-2 bg-gray-50 rounded-lg space-y-1 text-sm text-gray-700">
-                    <strong>Purchase Details:</strong>
-                    <ul className="ml-4 list-disc">
-                      {item.items.map((i, idx) => (
-                        <li key={idx}>
-                          {i.name} — Qty: {i.qty}
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Total Items: {item.items.reduce((sum, i) => sum + i.qty, 0)}
-                    </p>
-                  </div>
-                )}
-
-                {type === "payment" && fixedDetails && (
-                  <div className="mt-2 p-2 bg-gray-50 rounded-lg space-y-1 text-sm text-gray-700">
-                    <p><strong>Payment Method:</strong> {item.method || "—"}</p>
-                    {item.reference && <p><strong>Reference:</strong> {item.reference}</p>}
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </CardContent>
-    </Card>
   );
 }

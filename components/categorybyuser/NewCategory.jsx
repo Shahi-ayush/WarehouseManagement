@@ -47,7 +47,7 @@ export default function NewCategory({ initialData = {}, isUpdate = false }) {
   return (
     <div>
       <FormHeader
-        title={isUpdate ? "Update Category" : "New Category"}
+        title={isUpdate ? "Update Your Existing Category" : "Create a New Category "}
         href="/dashboard/inventory/categories"
       />
       <form

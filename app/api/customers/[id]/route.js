@@ -6,21 +6,6 @@ import { authOptions } from "@/lib/authOptions";
 import { NextResponse } from "next/server";
 
 
-// export async function DELETE(req, { params }) {
-//   try {
-//     // Await params before using
-//     const { id } = await params;
-
-//     await db.customer.delete({
-//       where: { id },
-//     });
-
-//     return NextResponse.json({ message: "Customer deleted successfully" });
-//   } catch (err) {
-//     console.error(err);
-//     return NextResponse.json({ message: "Failed to delete customer" }, { status: 500 });
-//   }
-// }
 
 export async function DELETE(req, context) {
   try {

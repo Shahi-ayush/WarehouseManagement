@@ -17,6 +17,18 @@ datasource db {
 enum PaymentMethod {
   CASH
   BANK
+  ESEWA
+  KHALTI
+}
+
+
+enum SaleStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
 }
 
 // schema.prisma
@@ -174,6 +186,10 @@ model Sale {
   referenceNo String?
   total       Float
   notes       String?
+
+  status      SaleStatus @default(PENDING)  // <-- new status field
+
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   userId      String    @db.ObjectId

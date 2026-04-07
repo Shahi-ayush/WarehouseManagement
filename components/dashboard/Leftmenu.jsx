@@ -21,7 +21,7 @@ export default function Leftmenu() {
     { title: "Items", href: "/dashboard/inventory/items" },
     // { title: "Categories", href: "/dashboard/inventory/categories" },
     // { title: "Brands", href: "/dashboard/inventory/brands" },
-      { title: "Activities", href: "/dashboard/inventory/actions" },
+      { title: "Assets", href: "/dashboard/inventory/actions" },
 
     // { title: "Units", href: "/dashboard/inventory/units" },
     // { title: "Warehouse", href: "/dashboard/inventory/warehouse" },
