@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -112,6 +113,12 @@ export default function LoginForm() {
           Login
         </button>
       )}
+      <Link
+        href="/customer/login"
+        className="block text-center text-sm font-medium text-blue-600 hover:underline dark:text-blue-500"
+      >
+        Login as customer
+      </Link>
 
       <p className="text-sm font-light text-gray-500 dark:text-gray-400">
         Already have an account?{" "}
