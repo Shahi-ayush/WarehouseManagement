@@ -23,6 +23,10 @@ export default  function CreateItemForm({categories,brands,warehouses,suppliers,
 
 const[imageUrl,setImageUrl]=useState(initialData.imageUrl)
 const router= useRouter()
+const normalizedInitialData = {
+  ...initialData,
+  qty: initialData?.qty ?? initialData?.quantity ?? "",
+}
    console.log(categories);
   const {
     register,
@@ -31,7 +35,7 @@ const router= useRouter()
     formState: { errors },
   } = useForm(
     {
-       defaultValues:initialData
+       defaultValues:normalizedInitialData
     }
   )
   const [loading,setLoading]=useState(false);
@@ -40,6 +44,7 @@ router.push("/dashboard/inventory/items")
 }
   async function onSubmit(data){
     data.imageUrl=imageUrl
+    data.qty = data.qty ?? initialData?.qty ?? initialData?.quantity ?? ""
     console.log(data)
     if(isUpdate){
         //update request

@@ -63,7 +63,14 @@ model Item {
   transferStockAdjustments TransferStockAdjustment[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+
+
 userId String @db.ObjectId
+
+
+
+
   @@unique([sku, warehouseId]) //  SKU unique per warehouse
 
 }
@@ -292,9 +299,13 @@ model Customer {
   payments  Payment[]
 
   accounts  CustomerAccount[] // <-- one-to-many
+
+
+
   totalTransactions Int      @default(0)
   totalAmountSpent  Float    @default(0)
   purchasedItems    Json?    // optional for list of purchased item details
+  wishlist          String[] @db.ObjectId
 
   @@unique([userId, phone]) // phone unique only per user
 }

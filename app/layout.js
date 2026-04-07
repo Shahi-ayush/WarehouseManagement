@@ -1,5 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import "../styles/main.scss";
+import "../styles/main.css";
 import { Toaster } from "react-hot-toast";
 import AuthProvider from "@/context/AuthProvider";
 

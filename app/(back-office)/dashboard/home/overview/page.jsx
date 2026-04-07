@@ -25,7 +25,7 @@ export default async function Dashboard() {
       {/* <DashboardBanner /> */}
 
       {/* 🔹 Low stock toast notification */}
-      <LowStockNotifier lowStockItems={lowStockItems} />
+      {/* <LowStockNotifier lowStockItems={lowStockItems} /> */}
 
       <SalesOverview />
       <CurrentStock items={items} />
