@@ -9,7 +9,7 @@ export default function SalesActivityCard({ item }) {
       className="group relative cursor-pointer shadow-sm rounded-xl border border-slate-200 
         hover:border-blue-400 hover:shadow-lg bg-white 
         flex items-center flex-col gap-3 px-6 py-6
-        w-full min-w-[150px] transition-all duration-300 
+        w-full min-w-0 transition-all duration-300 
         hover:scale-[1.03] active:scale-[0.98]"
     >
       <h4 className={`font-bold text-3xl ${item.color} transition-colors`}>

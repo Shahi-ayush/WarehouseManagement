@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import SubscriptionCard from "./SubscriptionCard";
 import SidebarDropdownLink from "./SidebarDropdownLink";
 
 export default function Leftmenu() {
@@ -104,8 +103,8 @@ export default function Leftmenu() {
 
       {/* ===== BOTTOM SECTION ===== */}
       <div className=" py-3 flex flex-col items-center gap-3 px-3">
-        {/* Full-width Subscription Card */}
-        <SubscriptionCard />
+     
+       
 
         {/* Back button */}
         <button className="border-t border-slate-700 w-full flex justify-center items-center py-2.5 hover:bg-slate-800 transition-colors duration-200 rounded-md">

@@ -207,7 +207,6 @@ export default function PurchasesPage() {
           <table className="w-full border-collapse border">
             <thead className="bg-gray-200">
               <tr>
-                <th className="border p-2 text-left">ID</th>
                 <th className="border p-2 text-left">Name</th>
                 <th className="border p-2 text-left">Phone</th>
                 <th className="border p-2 text-left">Email</th>
@@ -226,7 +225,6 @@ export default function PurchasesPage() {
                     className="hover:bg-gray-100 cursor-pointer"
                     onClick={() => selectCustomer(c)}
                   >
-                    <td className="border p-2">{c.id}</td>
                     <td className="border p-2">{c.name}</td>
                     <td className="border p-2">{c.phone}</td>
                     <td className="border p-2">{c.email || "-"}</td>

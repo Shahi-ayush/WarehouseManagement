@@ -14,13 +14,28 @@ export default function Pill({ text, variant }) {
     UNVERIFIED: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300",
   };
 
+  const labels = {
+    CASH: "Cash",
+    BANK: "Transfer",
+    KHALTI: "Khalti",
+    ESEWA: "eSewa",
+    PENDING: "Pending",
+    PROCESSING: "Processing",
+    SHIPPED: "Shipped",
+    OUT_FOR_DELIVERY: "Out for Delivery",
+    DELIVERED: "Delivered",
+    CANCELLED: "Cancelled",
+    VERIFIED: "Verified",
+    UNVERIFIED: "Unverified",
+  };
+
   return (
     <span
       className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${
         styles[variant] || "bg-gray-100 text-gray-600"
       }`}
     >
-      {text}
+      {labels[variant] || text}
     </span>
   );
 }

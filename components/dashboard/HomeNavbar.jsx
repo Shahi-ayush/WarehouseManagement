@@ -21,9 +21,9 @@ export default function HomeNavbar() {
 
   const navLinks = [
     { title: "Dashboard", href: "/dashboard/home/overview" },
-    { title: "Stock Overview", href: "/dashboard/home/getting-started" },
-    { title: "Recent Updates", href: "/dashboard/home/updates" },
-    { title: "Announcements", href: "/dashboard/home/announcements" },
+        { title: "WishList", href: "/dashboard/home/announcements" },
+
+    { title: "Low Stock Overview", href: "/dashboard/home/getting-started" },
   ];
 
   return (

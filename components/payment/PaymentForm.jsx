@@ -53,7 +53,10 @@ export default function CustomerPaymentForm() {
     setPaying(true);
 
     try {
-      if (method === "khalti") {
+      if (method === "bank") {
+        // Redirect to demo payment form
+        router.push(`/demo-payment?amount=${Number(amount)}`);
+      } else if (method === "khalti") {
         // Initiate Khalti payment via your backend
         const res = await fetch("/api/customer-auth/khalti-initiate", {
           method: "POST",
@@ -72,7 +75,7 @@ export default function CustomerPaymentForm() {
           alert("Failed to initiate Khalti payment: " + (data.message || "Unknown error"));
         }
       } else {
-        // Cash / Bank
+        // Cash
         const res = await fetch("/api/customer-auth/paymentclient", {
           method: "POST",
           headers: {
@@ -124,11 +127,11 @@ export default function CustomerPaymentForm() {
           onChange={(e) => setMethod(e.target.value)}
           className="w-full p-2 border rounded-lg"
         >
-          <option value="bank">Bank</option>
+          <option value="bank"> Demo Payment (Test Only)</option>
           <option value="khalti">Khalti</option>
         </select>
 
-        {method !== "khalti" && (
+        {method !== "khalti" && method !== "bank" && (
           <input
             type="text"
             placeholder="Reference (optional)"

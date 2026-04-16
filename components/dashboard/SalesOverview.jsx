@@ -50,9 +50,9 @@ export default async function SalesOverview() {
 
   return (
     <section className="border-b border-slate-200 rounded-2xl shadow-sm p-8 my-4">
-      <div className="grid grid-cols-12 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
         {/* Inventory Overview */}
-        <div className="col-span-8 pr-4 border-r border-slate-300">
+        <div className="xl:col-span-8 pr-0 xl:pr-4 border-slate-300 xl:border-r">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-slate-800">Inventory Overview</h2>
             <CheckCircle2 className="text-green-600 w-5 h-5" />
@@ -60,7 +60,7 @@ export default async function SalesOverview() {
           <p className="text-slate-600 mb-3 font-medium">
             Total Records: <span className="font-semibold">{totalOverview}</span>
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {salesActivity.map((item, i) => (
               <SalesActivityCard item={item} key={i} />
             ))}
@@ -68,7 +68,7 @@ export default async function SalesOverview() {
         </div>
 
         {/* Warehouse Summary */}
-        <div className="col-span-4 pl-4">
+        <div className="xl:col-span-4 pl-0 xl:pl-4">
           <h2 className="text-xl font-semibold mb-4 text-slate-800">Warehouse Stock Summary</h2>
           <div className="space-y-3">
             {inventorySummary.map((item, i) => (
