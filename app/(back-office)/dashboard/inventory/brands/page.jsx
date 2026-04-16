@@ -7,6 +7,7 @@ import FixedHeader from "@/components/dashboard/FixedHeader";
 export default function Brands() {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch brands from API
   useEffect(() => {
@@ -23,7 +24,7 @@ export default function Brands() {
       }
     }
     fetchBrands();
-  }, []);
+  }, [refreshKey]);
 
   const columns = ["title"];
 
@@ -34,7 +35,12 @@ export default function Brands() {
         {loading ? (
           <p className="text-center text-lg">Loading...</p>
         ) : (
-          <DataTable data={brands} columns={columns} resourceTitle="brands" />
+          <DataTable
+            data={brands}
+            columns={columns}
+            resourceTitle="brands"
+            onDeleteSuccess={() => setRefreshKey((prev) => prev + 1)}
+          />
         )}
       </div>
     </div>

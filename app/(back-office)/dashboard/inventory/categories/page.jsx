@@ -9,6 +9,7 @@ import FixedHeader from "@/components/dashboard/FixedHeader";
 export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch categories from API
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function Categories() {
       }
     }
     fetchCategories();
-  }, []);
+  }, [refreshKey]);
 
   const columns = ["title", "description"];
 
@@ -36,7 +37,12 @@ export default function Categories() {
         {loading ? (
           <p className="text-center text-lg">Loading...</p>
         ) : (
-          <DataTable data={categories} columns={columns} resourceTitle="categories" />
+          <DataTable
+            data={categories}
+            columns={columns}
+            resourceTitle="categories"
+            onDeleteSuccess={() => setRefreshKey((prev) => prev + 1)}
+          />
         )}
       </div>
     </div>

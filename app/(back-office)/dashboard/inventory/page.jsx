@@ -79,8 +79,7 @@ export default function Inventory() {
 
  ];
   return (
-    <div>
-      <FixedHeader newLink="/dashboard/inventory/items/new"/>
+  
      <div className="grid grid-col-1 lg:grid-cols-3 md:grid-cols-2 py-8 px-16 gap-5">
 
 
@@ -94,6 +93,6 @@ export default function Inventory() {
 
 
       </div>
-    </div>
+   
   );
 }

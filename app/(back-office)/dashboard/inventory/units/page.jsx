@@ -9,6 +9,7 @@ import FixedHeader from "@/components/dashboard/FixedHeader";
 export default function Units() {
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch units from API
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function Units() {
       }
     }
     fetchUnits();
-  }, []);
+  }, [refreshKey]);
 
   const columns = ["title"];
 
@@ -36,7 +37,12 @@ export default function Units() {
         {loading ? (
           <p className="text-center text-lg">Loading...</p>
         ) : (
-          <DataTable data={units} columns={columns} resourceTitle="units" />
+          <DataTable
+            data={units}
+            columns={columns}
+            resourceTitle="units"
+            onDeleteSuccess={() => setRefreshKey((prev) => prev + 1)}
+          />
         )}
       </div>
     </div>

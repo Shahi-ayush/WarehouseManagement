@@ -6,9 +6,8 @@ import React, { useState } from 'react'
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 
-export default function DeleteBtn({id,endpoint}) {
+export default function DeleteBtn({id,endpoint,onSuccess}) {
     const [loading,setLoading]=useState(false)
-const baseUrl =process.env.NEXT_PUBLIC_BASE_URL;
 const router=useRouter()
 //const confirmed = confirm("Are you sure ?")
 async function handleDelete(){
@@ -25,18 +24,24 @@ Swal.fire({
 }).then(async(result) => {
   if (result.isConfirmed) {
 
-  const res=  await fetch (`${baseUrl}/api/${endpoint}?id=${id}`,{
+  const res=  await fetch (`/api/${endpoint}?id=${id}`,{
         method:"DELETE",
     }
 )
 console.log(res)
 
 if(res.ok){
-
-router.refresh()
-setLoading(false)
-toast.success("Deleted Succesfully")
+  router.refresh()
+  if (typeof onSuccess === "function") {
+    onSuccess();
+  }
+  toast.success("Deleted Successfully")
+} else {
+  const errorData = await res.json().catch(() => ({}));
+  toast.error(errorData.message || "Failed to delete item");
 }
+
+setLoading(false)
 
   } else{
     setLoading(false)

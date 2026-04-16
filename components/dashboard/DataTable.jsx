@@ -28,7 +28,7 @@ const formatDate = (value) => {
       });
 };
 
-export default function DataTable({ data, columns = [], resourceTitle }) {
+export default function DataTable({ data, columns = [], resourceTitle, onDeleteSuccess }) {
   const [sortConfig, setSortConfig] = useState({
     key: "title",
     direction: "asc",
@@ -76,43 +76,8 @@ export default function DataTable({ data, columns = [], resourceTitle }) {
     return 0;
   });
 
-  // Export table to CSV
-  const exportCSV = () => {
-    const headers = columns.map((c) => columnLabels[c] || c).join(",");
-    const rows = sortedData.map((item) =>
-      columns
-        .map((col) => {
-          const getValue = (obj, key) =>
-            key.includes(".") ? key.split(".").reduce((o, k) => o?.[k], obj) : obj[key];
-
-          const value = getValue(item, col);
-          return col === "createdAt" ? `"${formatDate(value)}"` : `"${value ?? ""}"`;
-        })
-        .join(",")
-    );
-
-    const csv = [headers, ...rows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${resourceTitle}.csv`;
-    a.click();
-  };
-
   return (
     <div className="bg-white shadow-md rounded-lg">
-      {/* Controls */}
-      <div className="flex justify-end items-center p-4 space-x-2">
-        <button
-          onClick={exportCSV}
-          className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-        >
-          Export CSV
-        </button>
-      </div>
-
       <div className="relative overflow-x-auto">
         <table className="w-full text-sm text-left text-gray-500">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50">
@@ -176,7 +141,7 @@ export default function DataTable({ data, columns = [], resourceTitle }) {
                   >
                     <Pencil className="w-4 h-4" /> Edit
                   </Link>
-                  <DeleteBtn id={item.id} endpoint={resourceTitle} />
+                  <DeleteBtn id={item.id} endpoint={resourceTitle} onSuccess={onDeleteSuccess} />
                 </td>
               </tr>
             ))}

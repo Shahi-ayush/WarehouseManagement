@@ -9,6 +9,7 @@ import FixedHeader from "@/components/dashboard/FixedHeader";
 export default function Suppliers() {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch suppliers from API
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function Suppliers() {
       }
     }
     fetchSuppliers();
-  }, []);
+  }, [refreshKey]);
 
   const columns = ["title", "notes" , "phone" ,"email"];
 
@@ -36,7 +37,12 @@ export default function Suppliers() {
         {loading ? (
           <p className="text-center text-lg">Loading...</p>
         ) : (
-          <DataTable data={suppliers} columns={columns} resourceTitle="suppliers" />
+          <DataTable
+            data={suppliers}
+            columns={columns}
+            resourceTitle="suppliers"
+            onDeleteSuccess={() => setRefreshKey((prev) => prev + 1)}
+          />
         )}
       </div>
     </div>

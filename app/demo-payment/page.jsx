@@ -1,13 +1,13 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 
 const DEMO_PHONE = "9702237404";
 const DEMO_MPIN = "0000";
 const DEMO_OTP = "98765";
 
-export default function DemoPaymentPage() {
+function DemoPaymentContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -177,5 +177,13 @@ export default function DemoPaymentPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function DemoPaymentPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <DemoPaymentContent />
+    </Suspense>
   );
 }

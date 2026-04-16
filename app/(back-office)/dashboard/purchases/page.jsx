@@ -85,14 +85,37 @@ export default function PurchasesPage() {
   }, [customerPhone]);
 
   // Item selection & quantity
-  const handleQuantityChange = (itemId, qty) => {
-    setSelectedItems((prev) => {
-      const existing = prev.find((i) => i.id === itemId);
-      if (existing) return prev.map((i) => (i.id === itemId ? { ...i, qty } : i));
-      const item = items.find((i) => i.id === itemId);
-      return [...prev, { ...item, qty }];
-    });
-  };
+  // const handleQuantityChange = (itemId, qty) => {
+  //   setSelectedItems((prev) => {
+  //     const existing = prev.find((i) => i.id === itemId);
+  //     if (existing) return prev.map((i) => (i.id === itemId ? { ...i, qty } : i));
+  //     const item = items.find((i) => i.id === itemId);
+  //     return [...prev, { ...item, qty }];
+  //   });
+  // };
+
+const handleQuantityChange = (itemId, qty) => {
+  setSelectedItems((prev) => {
+    // Remove item if qty is 0 or empty
+    if (qty === 0 || qty === "") {
+      return prev.filter((i) => i.id !== itemId);
+    }
+
+    const existing = prev.find((i) => i.id === itemId);
+
+    if (existing) {
+      return prev.map((i) =>
+        i.id === itemId ? { ...i, qty } : i
+      );
+    }
+
+    const item = items.find((i) => i.id === itemId);
+    return [...prev, { ...item, qty }];
+  });
+};
+
+
+
   const handleRemoveItem = (itemId) =>
     setSelectedItems((prev) => prev.filter((i) => i.id !== itemId));
   const totalAmount = selectedItems.reduce(
@@ -187,19 +210,16 @@ export default function PurchasesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-        Sales And Billing
-      </h1>
-
+     
       {/* Customer Selection */}
       <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
-        <h2 className="text-2xl font-semibold mb-4">Customer List</h2>
+        <h2 className="text-2xl font-semibold mb-4">Select a customer for Billing</h2>
         <input
           type="text"
           value={customerPhone}
           onChange={(e) => setCustomerPhone(e.target.value)}
-          placeholder="Search by phone..."
-          className="border border-gray-300 rounded px-3 py-2 mb-4 w-full md:w-1/3"
+          placeholder="Search by phone or Name..."
+          className="border border-gray-300 rounded px-3 py-2 mb-4 w-full md:w1/3"
         />
         {allCustomers.length === 0 ? (
           <p>No customers found.</p>
@@ -209,7 +229,6 @@ export default function PurchasesPage() {
               <tr>
                 <th className="border p-2 text-left">Name</th>
                 <th className="border p-2 text-left">Phone</th>
-                <th className="border p-2 text-left">Email</th>
               </tr>
             </thead>
             <tbody>
@@ -227,7 +246,6 @@ export default function PurchasesPage() {
                   >
                     <td className="border p-2">{c.name}</td>
                     <td className="border p-2">{c.phone}</td>
-                    <td className="border p-2">{c.email || "-"}</td>
                   </tr>
                 ))}
             </tbody>
@@ -277,7 +295,7 @@ export default function PurchasesPage() {
                             Stock: {item.quantity}, Price: {item.sellingPrice}
                           </p>
                         </div>
-                        <input
+                        {/* <input
                           type="number"
                           min={0}
                           max={item.quantity}
@@ -290,7 +308,51 @@ export default function PurchasesPage() {
                           value={
                             selectedItems.find((i) => i.id === item.id)?.qty || ""
                           }
-                        />
+                        /> */}
+
+<input
+  type="number"
+  min={0}
+  max={item.quantity}
+  placeholder="Qty"
+  disabled={item.quantity === 0}
+  className="border px-2 py-1 w-20 rounded"
+  value={
+    selectedItems.find((i) => i.id === item.id)?.qty || ""
+  }
+  onKeyDown={(e) => {
+    if (e.key === "-" || e.key === "e") {
+      e.preventDefault();
+    }
+  }}
+  // onChange={(e) => {
+  //   let value = Number(e.target.value);
+
+  //   if (value < 0) value = 0;
+  //   if (value > item.quantity) value = item.quantity;
+
+  //   handleQuantityChange(item.id, value);
+  // }}
+
+onChange={(e) => {
+  let value = e.target.value;
+
+  // Allow empty input (so user can type)
+  if (value === "") {
+    handleQuantityChange(item.id, "");
+    return;
+  }
+
+  value = Number(value);
+
+  if (value < 0) value = 0;
+  if (value > item.quantity) value = item.quantity;
+
+  handleQuantityChange(item.id, value);
+}}
+
+/>
+
                       </li>
                     ))}
                   </ul>

@@ -1,6 +1,5 @@
 "use client";
 
-import FormHeader from '@/components/dashboard/FormHeader';
 import SubmitButton from '@/components/FormInputs/SubmitButton';
 import TextInput from '@/components/FormInputs/TextInput';
 import TextareaInput from '@/components/FormInputs/TextareaInput';
@@ -9,7 +8,7 @@ import { makePostRequest, makePutRequest } from '@/lib/apiRequest';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export default function NewSupplier({ initialData = {}, isUpdate = false }) {
+export default function NewSupplier({ initialData = {}, isUpdate = false, onSuccess }) {
   
   
   
@@ -42,17 +41,14 @@ export default function NewSupplier({ initialData = {}, isUpdate = false }) {
         "api/suppliers",
         data,
         "Suppliers",
-        reset
+        reset,
+        onSuccess
       );
     }
   }
 
   return (
     <div>
-      <FormHeader
-        title={isUpdate ? "Update Existing Supplier" : "Create A New Supplier"}
-        href="/dashboard/inventory/suppliers"
-      />
       <form
         onSubmit={handleSubmit(onSubmit)}
         className='w-full max-w-4xl my-5 mx-auto p-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700'

@@ -19,6 +19,7 @@ export default function MasterDataPage() {
   // States
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch data based on tab
   useEffect(() => {
@@ -53,7 +54,7 @@ export default function MasterDataPage() {
     }
 
     fetchData();
-  }, [activeTab]);
+  }, [activeTab, refreshKey]);
 
   // Dynamic columns
   const getColumns = () => {
@@ -87,10 +88,34 @@ export default function MasterDataPage() {
 
       {/* FORM SECTION */}
       <div className="mb-10">
-        {activeTab === "category" && <NewCategory isUpdate={false} initialData={{}} />}
-        {activeTab === "brand" && <NewBrand isUpdate={false} initialData={{}} />}
-        {activeTab === "supplier" && <NewSupplier isUpdate={false} initialData={{}} />}
-        {activeTab === "warehouse" && <NewWarehouse isUpdate={false} initialData={{}} />}
+        {activeTab === "category" && (
+          <NewCategory
+            isUpdate={false}
+            initialData={{}}
+            onSuccess={() => setRefreshKey((prev) => prev + 1)}
+          />
+        )}
+        {activeTab === "brand" && (
+          <NewBrand
+            isUpdate={false}
+            initialData={{}}
+            onSuccess={() => setRefreshKey((prev) => prev + 1)}
+          />
+        )}
+        {activeTab === "supplier" && (
+          <NewSupplier
+            isUpdate={false}
+            initialData={{}}
+            onSuccess={() => setRefreshKey((prev) => prev + 1)}
+          />
+        )}
+        {activeTab === "warehouse" && (
+          <NewWarehouse
+            isUpdate={false}
+            initialData={{}}
+            onSuccess={() => setRefreshKey((prev) => prev + 1)}
+          />
+        )}
       </div>
 
       {/* TABLE SECTION */}
@@ -106,6 +131,7 @@ export default function MasterDataPage() {
               data={data}
               columns={getColumns()}
               resourceTitle={getTitle().toLowerCase()}
+              onDeleteSuccess={() => setRefreshKey((prev) => prev + 1)}
             />
           )}
         </div>

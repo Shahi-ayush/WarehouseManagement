@@ -11,6 +11,7 @@ export default function Warehouse() {
   const [warehouses, setWarehouses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showGrid, setShowGrid] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch warehouses from API
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function Warehouse() {
       }
     }
     fetchWarehouse();
-  }, []);
+  }, [refreshKey]);
 
   // Columns including total quantity
   const columns = ["title", "location", "warehouseType", "description", "totalQuantity"];
@@ -93,6 +94,7 @@ export default function Warehouse() {
             data={warehousesWithQuantity}
             columns={columns}
             resourceTitle="warehouse"
+            onDeleteSuccess={() => setRefreshKey((prev) => prev + 1)}
           />
         )}
       </div>

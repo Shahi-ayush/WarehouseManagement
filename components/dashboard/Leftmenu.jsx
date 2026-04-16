@@ -9,6 +9,8 @@ import {
   ShoppingBag,
   ShoppingBasket,
   ShoppingCart,
+  Users,
+  DollarSign
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -76,18 +78,18 @@ export default function Leftmenu() {
           <SidebarDropdownLink
             items={salesLinks}
             title="Customers"
-            icon={ShoppingBasket}
+            icon={Users}
           />
 
           
           {/* Integrations */}
-          <Link
-            href="/dashboard/purchases"
-            className="flex items-center space-x-3 text-slate-300 hover:text-white hover:bg-slate-700/60 transition-all duration-200 py-2 px-3 rounded-lg"
-          >
-            <Cable className="w-5 h-5" />
-            <span>Sales</span>
-          </Link>
+        <Link
+  href="/dashboard/purchases"
+  className="flex items-center space-x-3 text-slate-300 hover:text-white hover:bg-slate-700/60 transition-all duration-200 py-2 px-3 rounded-lg"
+>
+  <DollarSign className="w-5 h-5" />
+  <span>Sales</span>
+</Link>
           {/* Reports */}
           <Link
             href="/dashboard/reports"

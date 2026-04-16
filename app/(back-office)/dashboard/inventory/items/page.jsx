@@ -17,6 +17,7 @@ export default function Items() {
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
 
@@ -40,37 +41,12 @@ const [toDate, setToDate] = useState("");
       }
     }
     fetchItems();
-  }, []);
+  }, [refreshKey]);
 
   // Extract unique categories
   const categories = [
     ...new Set(items.map((item) => item.category?.title).filter(Boolean)),
   ];
-
-
-
-
-  
-
-
-  // // Filter items based on search and category
-  // useEffect(() => {
-  //   let filtered = items;
-
-  //   if (searchTerm) {
-  //     filtered = filtered.filter((item) =>
-  //       item.title?.toLowerCase().includes(searchTerm.toLowerCase())
-  //     );
-  //   }
-
-  //   if (selectedCategory) {
-  //     filtered = filtered.filter(
-  //       (item) => item.category?.title === selectedCategory
-  //     );
-  //   }
-
-  //   setFilteredItems(filtered);
-  // }, [searchTerm, selectedCategory, items]);
 
 
   // Filter items based on search, category, and date range
@@ -126,8 +102,6 @@ useEffect(() => {
           </div>
 
 
-
-
           {/* Category Filter */}
           <div className="relative flex items-center">
             <Filter className="absolute left-3 w-4 h-4 text-gray-400" />
@@ -173,25 +147,6 @@ useEffect(() => {
               <span>New</span>
             </Link>
           </div>
-
-          {/* List/Grid Toggle Icons (static, non-functional) */}
-          <div className="flex rounded-md overflow-hidden border border-gray-300">
-            <button className="p-2 bg-blue-600 text-white">
-              <List className="w-4 h-4" />
-            </button>
-            <button className="p-2 bg-gray-100 text-gray-500 cursor-not-allowed">
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* More and Help Icons */}
-          <button className="bg-gray-100 p-2 rounded-md">
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
-
-          <button className="bg-orange-600 p-2 rounded-md">
-            <HelpCircle className="w-5 h-5 text-white" />
-          </button>
         </div>
       </div>
 
@@ -202,7 +157,12 @@ useEffect(() => {
         ) : filteredItems.length === 0 ? (
           <p className="text-center">No items found</p>
         ) : (
-          <DataTable data={filteredItems} columns={columns} resourceTitle="items" />
+          <DataTable
+            data={filteredItems}
+            columns={columns}
+            resourceTitle="items"
+            onDeleteSuccess={() => setRefreshKey((prev) => prev + 1)}
+          />
         )}
       </div>
     </div>

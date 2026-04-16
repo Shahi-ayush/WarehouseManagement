@@ -6,60 +6,47 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { NextResponse } from "next/server";
 
-// GET all sales/purchases for reports
-export async function GET() {
-  try {
-    const sales = await db.sale.findMany({
-      include: { items: true },
-      orderBy: { createdAt: "desc" },
-    });
-    return NextResponse.json(sales);
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ message: "Failed to fetch purchases" }, { status: 500 });
-  }
-}
-
-// POST new sale
-// export async function POST(req) {
+// // GET all sales/purchases for reports
+// export async function GET() {
 //   try {
-//     const session = await getServerSession(authOptions);
-//     const userId = session?.user?.id;
-//     if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-
-//     const body = await req.json();
-//     const { customerId, items } = body;
-
-//     if (!customerId || !items || !items.length)
-//       return NextResponse.json({ message: "Missing data" }, { status: 400 });
-
-//     // calculate total
-//     const total = items.reduce((acc, i) => acc + i.qty * i.sellingPrice, 0);
-
-//     const sale = await db.sale.create({
-//       data: {
-//         customerId,
-//         total,
-//         notes: JSON.stringify(items.map(i => ({ itemId: i.id, qty: i.qty }))),
-//         userId,
-//         items: {
-//           create: items.map(i => ({
-//             itemId: i.id,
-//             name: i.title,
-//             qty: i.qty,
-//           })),
-//         },
-//       },
+//     const sales = await db.sale.findMany({
 //       include: { items: true },
+//       orderBy: { createdAt: "desc" },
 //     });
-
-//     return NextResponse.json({ success: true, sale });
+//     return NextResponse.json(sales);
 //   } catch (err) {
 //     console.error(err);
-//     return NextResponse.json({ message: "Server error" }, { status: 500 });
+//     return NextResponse.json({ message: "Failed to fetch purchases" }, { status: 500 });
 //   }
 // }
 
+
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json([], { status: 401 });
+    }
+
+    const sales = await db.sale.findMany({
+      where: {
+        userId, // ✅ THIS FIXES EVERYTHING
+      },
+      include: { items: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json(sales);
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json(
+      { message: "Failed to fetch purchases" },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(req) {
   try {

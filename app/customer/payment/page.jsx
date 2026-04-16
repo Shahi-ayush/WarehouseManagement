@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import CustomerPaymentForm from "@/components/payment/PaymentForm";
-import PaymentStatusBanner from "@/components/payment/PaymentStatusBanner";
+// import PaymentStatusBanner from "@/components/payment/PaymentStatusBanner";
 
 export default function PaymentPage() {
   return (

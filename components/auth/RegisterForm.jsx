@@ -26,11 +26,10 @@ export default function RegisterForm() {
 
   async function onSubmit(data) {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
       setLoading(true);
       setEmailErr("");
 
-      const response = await fetch(`${baseUrl}/api/user`, {
+      const response = await fetch(`/api/user`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
