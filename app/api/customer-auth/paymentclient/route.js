@@ -1,16 +1,10 @@
 import { db } from "@/lib/db";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { NextResponse } from "next/server";
+import { verifyCustomerToken } from "@/lib/auth";
 
 export async function POST(req) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const userId = session.user.id; // logged-in user ID
+    const decoded = verifyCustomerToken(req);
     const { amount, method, reference } = await req.json();
 
     if (!amount || !method) {
@@ -24,9 +18,16 @@ export async function POST(req) {
       return NextResponse.json({ message: "Invalid payment method" }, { status: 400 });
     }
 
-    // ✅ Find customer by session userId
-    const customer = await db.customer.findFirst({
-      where: { userId },
+    const account = await db.customerAccount.findUnique({
+      where: { id: decoded.accountId },
+    });
+
+    if (!account?.customerId) {
+      return NextResponse.json({ message: "Customer not linked" }, { status: 404 });
+    }
+
+    const customer = await db.customer.findUnique({
+      where: { id: account.customerId },
       include: { payments: true, sales: true },
     });
 
@@ -47,7 +48,7 @@ export async function POST(req) {
     const payment = await db.payment.create({
       data: {
         customerId: customer.id,
-        userId,          // logged-in user
+        userId: customer.userId,
         amount: Number(amount),
         method: methodEnum,
         reference: reference || "",

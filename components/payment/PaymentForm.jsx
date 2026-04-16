@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 export default function CustomerPaymentForm() {
   const [amount, setAmount] = useState("");
-  const [method, setMethod] = useState("cash");
+  const [method, setMethod] = useState("bank");
   const [reference, setReference] = useState("");
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -124,8 +124,7 @@ export default function CustomerPaymentForm() {
           onChange={(e) => setMethod(e.target.value)}
           className="w-full p-2 border rounded-lg"
         >
-         
-          <option value="">Bank</option>
+          <option value="bank">Bank</option>
           <option value="khalti">Khalti</option>
         </select>
 

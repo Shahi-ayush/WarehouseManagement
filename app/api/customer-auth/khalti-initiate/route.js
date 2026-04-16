@@ -2,6 +2,30 @@ import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { verifyToken } from "@/lib/verifyToken";
 
+function createPurchaseOrderId(customerId, accountId, amount) {
+  return ["due", customerId, accountId, Number(amount), Date.now()].join("__");
+}
+
+function getSiteUrl(req) {
+  return new URL(req.url).origin;
+}
+
+function getKhaltiConfig() {
+  const mode = (process.env.KHALTI_ENV || "sandbox").toLowerCase();
+
+  if (mode === "production") {
+    return {
+      apiBaseUrl: "https://khalti.com/api/v2",
+      checkoutBaseUrl: "https://pay.khalti.com",
+    };
+  }
+
+  return {
+    apiBaseUrl: "https://dev.khalti.com/api/v2",
+    checkoutBaseUrl: "https://test-pay.khalti.com",
+  };
+}
+
 export async function POST(req) {
   try {
     const authHeader = req.headers.get("authorization");
@@ -44,40 +68,48 @@ export async function POST(req) {
       return NextResponse.json({ message: "Amount exceeds due balance" }, { status: 400 });
     }
 
-    const khaltiRes = await fetch("https://dev.khalti.com/api/v2/epayment/initiate/", {
+    const purchaseOrderId = createPurchaseOrderId(customer.id, account.id, amount);
+    const siteUrl = getSiteUrl(req);
+    const khaltiConfig = getKhaltiConfig();
+
+    const khaltiRes = await fetch(`${khaltiConfig.apiBaseUrl}/epayment/initiate/`, {
       method: "POST",
       headers: {
         Authorization: `Key ${process.env.KHALTI_SECRET_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/customer-auth/khalti-verify`,
-        website_url: process.env.NEXT_PUBLIC_SITE_URL,
+        return_url: `${siteUrl}/api/customer-auth/khalti-verify`,
+        website_url: siteUrl,
         amount: Number(amount) * 100,
-        purchase_order_id: `${customer.id}-${Date.now()}`,
+        purchase_order_id: purchaseOrderId,
         purchase_order_name: "Due Payment",
         customer_info: {
           name: customer.name || "Customer",
         },
-        merchant_extra: JSON.stringify({
-          customerId: customer.id,
-            userId: customer.userId, 
-          amount: Number(amount),
-        }),
       }),
     });
 
     const khaltiData = await khaltiRes.json();
     console.log("Khalti response:", khaltiData);
 
-    if (!khaltiData.payment_url) {
+    if (!khaltiData.payment_url && !khaltiData.pidx) {
       return NextResponse.json(
         { message: khaltiData?.detail || "Khalti initiation failed" },
         { status: 400 }
       );
     }
 
-    return NextResponse.json({ payment_url: khaltiData.payment_url });
+    const paymentUrl = khaltiData.payment_url || `${khaltiConfig.checkoutBaseUrl}/?pidx=${khaltiData.pidx}`;
+    const normalizedPaymentUrl = khaltiData.pidx
+      ? `${khaltiConfig.checkoutBaseUrl}/?pidx=${khaltiData.pidx}`
+      : paymentUrl;
+
+    return NextResponse.json({
+      payment_url: normalizedPaymentUrl,
+      pidx: khaltiData.pidx,
+      purchase_order_id: purchaseOrderId,
+    });
   } catch (err) {
     console.error("Khalti initiate error:", err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });

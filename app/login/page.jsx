@@ -1,20 +1,27 @@
 //app/login/page.jsx
-"use client"
+"use client";
+
+import { useEffect } from "react";
 import LoginForm from "@/components/auth/LoginForm";
-
-
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-
-import React from "react";
 
 export default function Login() {
-    const {data:session,status}=useSession()
-    if(status==='loading'){
-        return <p>Loading User Please Wait....</p>
+    const router = useRouter();
+    const { data: session, status } = useSession();
+
+    useEffect(() => {
+      if (status === "authenticated" && session?.user) {
+        router.replace("/dashboard/home/overview");
+      }
+    }, [router, session, status]);
+
+    if (status === "loading") {
+        return <p>Loading User Please Wait....</p>;
     }
-    if(status==='authenticated'){
-        redirect("/dashboard/home/overview")
+
+    if (status === "authenticated") {
+        return <p>Redirecting...</p>;
     }
   return (
     <section className="bg-gray-50 dark:bg-gray-900">

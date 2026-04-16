@@ -39,7 +39,12 @@ export async function GET(req) {
       take: 5, // last 5
     });
 
-    const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalPaidAgg = await db.payment.aggregate({
+      _sum: { amount: true },
+      where: { customerId },
+    });
+
+    const totalPaid = totalPaidAgg._sum.amount || 0;
 
     return NextResponse.json({
       totalSpent: totalSpent._sum.total || 0,

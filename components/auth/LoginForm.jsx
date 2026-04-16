@@ -23,10 +23,13 @@ export default function LoginForm() {
         ...data,
         redirect: false,
       });
-      if (loginData) {
+      if (loginData?.ok) {
         setLoading(false);
         router.push("/dashboard/home/overview");
+        return;
       }
+      setLoading(false);
+      toast.error("Invalid email or password");
     } catch (error) {
       setLoading(false);
       console.error("Network Error:", error);
