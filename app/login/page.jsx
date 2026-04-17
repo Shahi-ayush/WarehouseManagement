@@ -20,6 +20,13 @@ export default function Login() {
       }
     }, [router, session, status]);
 
+  const errorMessage =
+    callbackError === "CredentialsCallbackMethod"
+      ? "Login failed because the credentials callback was requested with GET instead of POST. Check your deploy URL/proxy settings (especially NEXTAUTH_URL and HTTPS redirect rules)."
+      : callbackError === "Configuration"
+      ? "Authentication configuration is incomplete. Verify NEXTAUTH_SECRET or AUTH_SECRET and database environment variables in deployment settings."
+      : null;
+
     if (status === "loading") {
         return <p>Loading User Please Wait....</p>;
     }
@@ -46,10 +53,9 @@ export default function Login() {
             <h1 className="text-center text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
               Sign in to your account
             </h1>
-            {callbackError === "CredentialsCallbackMethod" && (
+            {errorMessage && (
               <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                Login failed because the credentials callback was requested with GET instead of POST.
-                Check your deploy URL/proxy settings (especially NEXTAUTH_URL and HTTPS redirect rules).
+                {errorMessage}
               </p>
             )}
             <LoginForm />
