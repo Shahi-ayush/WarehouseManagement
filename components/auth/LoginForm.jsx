@@ -20,20 +20,16 @@ export default function LoginForm() {
       console.log(data.email, data.password);
       setLoading(true);
       const loginData = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
+        ...data,
         redirect: false,
-        callbackUrl: "/dashboard/home/overview",
       });
-
-      if (loginData?.ok && loginData?.url) {
+      if (loginData?.ok) {
         setLoading(false);
-        router.push(loginData.url);
+        router.push("/dashboard/home/overview");
         return;
       }
-
       setLoading(false);
-      toast.error(loginData?.error || "Invalid email or password");
+      toast.error("Invalid email or password");
     } catch (error) {
       setLoading(false);
       console.error("Network Error:", error);

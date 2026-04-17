@@ -3,11 +3,13 @@
 
 import { useEffect } from "react";
 import LoginForm from "@/components/auth/LoginForm";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 export default function Login() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const callbackError = searchParams.get("error");
     const { data: session, status } = useSession();
 
     useEffect(() => {
@@ -42,6 +44,12 @@ export default function Login() {
             <h1 className="text-center text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
               Sign in to your account
             </h1>
+            {callbackError === "CredentialsCallbackMethod" && (
+              <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                Login failed because the credentials callback was requested with GET instead of POST.
+                Check your deploy URL/proxy settings (especially NEXTAUTH_URL and HTTPS redirect rules).
+              </p>
+            )}
             <LoginForm />
           </div>
         </div>
