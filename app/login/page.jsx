@@ -1,18 +1,20 @@
 //app/login/page.jsx
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import LoginForm from "@/components/auth/LoginForm";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 export default function Login() {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const callbackError = searchParams.get("error");
+    const [callbackError, setCallbackError] = useState(null);
     const { data: session, status } = useSession();
 
     useEffect(() => {
+      const params = new URLSearchParams(window.location.search);
+      setCallbackError(params.get("error"));
+
       if (status === "authenticated" && session?.user) {
         router.replace("/dashboard/home/overview");
       }
