@@ -3,7 +3,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";
 
 export default function LoginForm() {
@@ -19,17 +18,35 @@ export default function LoginForm() {
     try {
       console.log(data.email, data.password);
       setLoading(true);
-      const loginData = await signIn("credentials", {
-        ...data,
-        redirect: false,
+      const csrfRes = await fetch("/api/auth/csrf");
+      const csrfData = await csrfRes.json();
+
+      const body = new URLSearchParams({
+        csrfToken: csrfData.csrfToken,
+        email: data.email,
+        password: data.password,
+        callbackUrl: "/dashboard/home/overview",
+        json: "true",
       });
-      if (loginData?.ok) {
+
+      const callbackRes = await fetch("/api/auth/callback/credentials?json=true", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body,
+      });
+
+      const callbackData = await callbackRes.json();
+
+      if (!callbackData?.error && callbackData?.url) {
         setLoading(false);
-        router.push("/dashboard/home/overview");
+        router.push(callbackData.url);
         return;
       }
+
       setLoading(false);
-      toast.error("Invalid email or password");
+      toast.error(callbackData?.error || "Invalid email or password");
     } catch (error) {
       setLoading(false);
       console.error("Network Error:", error);
