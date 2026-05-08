@@ -2,12 +2,21 @@
 // import db from "@/lib/db";
 import { db } from "@/lib/db";
 
-import { hash } from "bcrypt";
+import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
   try {
     const { name, email, password } = await request.json();
+
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        {
+          message: "Name, email, and password are required",
+        },
+        { status: 400 }
+      );
+    }
 
     // Check if user email already Exists
     const userExist = await db.user.findUnique({
@@ -27,13 +36,25 @@ export async function POST(request) {
       data: {
         name,
         email,
-         hashedPassword,
+        hashedPassword,
       },
     });
-    console.log(newUser);
-    return NextResponse.json(newUser);
+
+    return NextResponse.json(
+      {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    console.log(error);
-    return NextResponse.json({ error });
+    console.error("User signup failed:", error);
+    return NextResponse.json(
+      {
+        message: "Unable to create user right now",
+      },
+      { status: 500 }
+    );
   }
 }

@@ -1,7 +1,5 @@
 "use client"
 
-import { useForm } from "react-hook-form"
-
 export default function TextareaInput({
     label,
     name,
@@ -13,6 +11,9 @@ export default function TextareaInput({
     className="sm:col-span-2",
 }) 
     {
+        const validationRules = {
+          required: isRequired ? `${label} is required` : false,
+        };
         // const {register,
         //     formState:{errors}
         // }=useForm ();
@@ -27,7 +28,7 @@ export default function TextareaInput({
 
 <div className="mt-2">
             <textarea
-              {...register(`${name}`, { required: isRequired })}
+              {...register(`${name}`, validationRules)}
                 name={name}
               id={name}
               
@@ -37,7 +38,7 @@ export default function TextareaInput({
             />
             {errors[`${name}`] && (
               <span className ="text-sm text-red-600 ">
-             {label}is required
+             {errors[`${name}`]?.message || `${label} is required`}
               </span>
             )}
           </div>

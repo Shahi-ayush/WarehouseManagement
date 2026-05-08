@@ -84,6 +84,11 @@ export default function ProfilePage() {
       }
 
       setMessage(data.message || "Profile updated successfully.");
+      window.dispatchEvent(
+        new CustomEvent("admin-profile-updated", {
+          detail: { name: form.name.trim() },
+        })
+      );
       setForm((prev) => ({
         ...prev,
         currentPassword: "",

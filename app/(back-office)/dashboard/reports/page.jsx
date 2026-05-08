@@ -10,6 +10,9 @@ export default function Reports() {
   const [salesData, setSalesData] = useState([]);
   const [mostSoldDaily, setMostSoldDaily] = useState([]);
   const [mostSoldMonthly, setMostSoldMonthly] = useState([]);
+  const [topCategories, setTopCategories] = useState([]);
+  const [topSuppliers, setTopSuppliers] = useState([]);
+  const [topCustomers, setTopCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,16 +47,32 @@ export default function Reports() {
     if (!salesData.length) {
       setMostSoldDaily([]);
       setMostSoldMonthly([]);
+      setTopCategories([]);
+      setTopSuppliers([]);
+      setTopCustomers([]);
       return;
     }
 
     const dailyCounts = {};
     const monthlyCounts = {};
+    const categoryCounts = {};
+    const supplierCounts = {};
+    const customerTotals = {};
+    const itemLookup = new Map(items.map((item) => [item.id, item]));
 
     salesData.forEach((sale) => {
       const date = new Date(sale.createdAt);
       const day = date.toISOString().split("T")[0];
       const month = `${date.getMonth() + 1}-${date.getFullYear()}`;
+      const customerName =
+        sale.customer?.name || sale.customer?.phone || sale.customerId || "Unknown customer";
+
+      if (!customerTotals[customerName]) {
+        customerTotals[customerName] = { name: customerName, amount: 0, orders: 0 };
+      }
+
+      customerTotals[customerName].amount += sale.total || 0;
+      customerTotals[customerName].orders += 1;
 
       sale.items?.forEach((item) => {
         if (!dailyCounts[day]) dailyCounts[day] = {};
@@ -63,6 +82,16 @@ export default function Reports() {
         if (!monthlyCounts[month]) monthlyCounts[month] = {};
         if (!monthlyCounts[month][item.name]) monthlyCounts[month][item.name] = 0;
         monthlyCounts[month][item.name] += item.qty;
+
+        const inventoryItem = itemLookup.get(item.itemId);
+        const categoryName = inventoryItem?.category?.title || "Uncategorized";
+        const supplierName = inventoryItem?.supplier?.title || "No supplier";
+
+        if (!categoryCounts[categoryName]) categoryCounts[categoryName] = 0;
+        if (!supplierCounts[supplierName]) supplierCounts[supplierName] = 0;
+
+        categoryCounts[categoryName] += item.qty || 0;
+        supplierCounts[supplierName] += item.qty || 0;
       });
     });
 
@@ -79,9 +108,30 @@ export default function Reports() {
       .slice(0, 5)
       .map(([name, qty]) => ({ name, qty }));
 
+    const sortedCategories = Object.entries(categoryCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, qty]) => ({ name, qty }));
+
+    const sortedSuppliers = Object.entries(supplierCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, qty]) => ({ name, qty }));
+
+    const sortedCustomers = Object.values(customerTotals)
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 5)
+      .map((customer) => ({
+        name: customer.name,
+        qty: `NPR ${customer.amount.toFixed(2)} (${customer.orders} orders)`,
+      }));
+
     setMostSoldDaily(sortedDaily);
     setMostSoldMonthly(sortedMonthly);
-  }, [salesData]);
+    setTopCategories(sortedCategories);
+    setTopSuppliers(sortedSuppliers);
+    setTopCustomers(sortedCustomers);
+  }, [items, salesData]);
 
   const forecastInsights = items
     .map((item) => {
@@ -274,6 +324,48 @@ export default function Reports() {
           )}
         </div>
       </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <ReportListCard
+          title="Top Sold Items by Category"
+          emptyText="No category sales yet"
+          items={topCategories}
+        />
+
+        <ReportListCard
+          title="Top Suppliers by Sold Items"
+          emptyText="No supplier sales yet"
+          items={topSuppliers}
+        />
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <ReportListCard
+          title="Top Customers"
+          emptyText="No customer sales yet"
+          items={topCustomers}
+        />
+      </div>
+    </div>
+  );
+}
+
+function ReportListCard({ title, emptyText, items }) {
+  return (
+    <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm">
+      <h2 className="font-semibold mb-4">{title}</h2>
+      {items.length === 0 ? (
+        <p className="text-gray-500">{emptyText}</p>
+      ) : (
+        <ul>
+          {items.map((item) => (
+            <li key={item.name} className="flex justify-between py-1 border-b">
+              <span>{item.name}</span>
+              <span>{item.qty}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

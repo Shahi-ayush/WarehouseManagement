@@ -41,29 +41,26 @@ export default function CustomerLoginPage() {
   };
 
   return (
-    <section className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
-      <div className="flex flex-col items-center px-6 py-8 w-full max-w-md">
-        {/* Logo */}
+    <section className="bg-gray-50 dark:bg-gray-900">
+      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
         <a
-          href="/customer/home"
+          href="/"
           className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white"
         >
           <img
-            className="w-10 h-10 mr-2"
+            className="w-8 h-8 mr-2"
             src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/logo.svg"
             alt="logo"
           />
           Inventory System
         </a>
+        <div className="w-full bg-white rounded-lg shadow-2xl dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+          <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+            <h1 className="text-center text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+              Sign in to your account
+            </h1>
 
-        {/* Card */}
-        <div className="bg-white dark:bg-gray-800 w-full rounded-lg shadow-md p-8 space-y-6">
-          <h1 className="text-center text-xl font-bold text-gray-900 dark:text-white">
-            Customer account 
-          </h1>
-
-          {/* Login Form */}
-          <form className="space-y-4" onSubmit={handleLogin}>
+          <form className="space-y-4 md:space-y-6" onSubmit={handleLogin}>
             <div>
               <label
                 htmlFor="email"
@@ -107,17 +104,32 @@ export default function CustomerLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full text-white py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-4 ${
+              className={`w-full text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center ${
                 loading
-                  ? "bg-blue-700 cursor-not-allowed"
+                  ? "bg-blue-700 cursor-not-allowed focus:ring-blue-300 dark:focus:ring-blue-800"
                   : "bg-blue-600 hover:bg-blue-700 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
               }`}
             >
               {loading ? "Signing in..." : "Login"}
             </button>
 
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-              Don&apos;t have an account?{" "}
+            <div className="grid grid-cols-2 gap-3">
+              <Link
+                href="/customer/login"
+                className="rounded-lg bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-blue-700"
+              >
+                Customer
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-lg border border-gray-300 px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              >
+                Admin
+              </Link>
+            </div>
+
+            <p className="text-sm font-light text-gray-500 dark:text-gray-400">
+              Already have an account?{" "}
               <Link
                 href="/customer/signup"
                 className="font-medium text-blue-600 hover:underline dark:text-blue-500"
@@ -126,6 +138,7 @@ export default function CustomerLoginPage() {
               </Link>
             </p>
           </form>
+          </div>
         </div>
       </div>
     </section>

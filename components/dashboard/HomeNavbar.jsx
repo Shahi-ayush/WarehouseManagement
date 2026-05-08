@@ -4,19 +4,46 @@ import { Building2, Dot} from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 export default function HomeNavbar() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
+  const [profileName, setProfileName] = useState("");
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+
+    async function fetchProfileName() {
+      try {
+        const res = await fetch("/api/user/profile", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        setProfileName(data.name || "");
+      } catch (error) {
+        console.error("Failed to load profile name:", error);
+      }
+    }
+
+    const handleProfileUpdate = (event) => {
+      setProfileName(event.detail?.name || "");
+    };
+
+    fetchProfileName();
+    window.addEventListener("admin-profile-updated", handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener("admin-profile-updated", handleProfileUpdate);
+    };
+  }, [status]);
 
   if (status === "loading") {
     return <p className="p-5 text-slate-600 text-sm animate-pulse">Loading user...</p>;
   }
 
 
-  const username = session?.user?.name
-    ? session.user.name.toUpperCase()
+  const username = (profileName || session?.user?.name)
+    ? (profileName || session?.user?.name).toUpperCase()
     : "USER";
 
   const navLinks = [

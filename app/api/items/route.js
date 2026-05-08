@@ -5,15 +5,35 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 
+function isUniqueConstraintError(error) {
+  return error?.code === "P2002";
+}
+
 // 🟢 CREATE ITEM (POST)
 export async function POST(request) {
   try {
     const itemData = await request.json();
+    const sku = itemData.sku?.trim();
+    const quantity = parseInt(itemData.qty);
 
     // ✅ Get logged-in user
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!sku || !itemData.warehouseId) {
+      return NextResponse.json(
+        { message: "SKU and warehouse are required" },
+        { status: 400 }
+      );
+    }
+
+    if (!Number.isInteger(quantity) || quantity < 0) {
+      return NextResponse.json(
+        { message: "Item Quantity cannot be negative" },
+        { status: 400 }
+      );
     }
 
     // ✅ Get warehouse and update stock
@@ -25,7 +45,27 @@ export async function POST(request) {
       return NextResponse.json({ message: "Warehouse not found" }, { status: 404 });
     }
 
-    const newStockQty = parseInt(warehouse.stockQty) + parseInt(itemData.qty);
+    if (warehouse.userId !== session.user.id) {
+      return NextResponse.json({ message: "Not authorized" }, { status: 403 });
+    }
+
+    const duplicateItem = await db.item.findFirst({
+      where: {
+        sku,
+        warehouseId: itemData.warehouseId,
+        userId: session.user.id,
+      },
+      select: { id: true },
+    });
+
+    if (duplicateItem) {
+      return NextResponse.json(
+        { message: "An item with this SKU already exists in the selected warehouse" },
+        { status: 409 }
+      );
+    }
+
+    const newStockQty = parseInt(warehouse.stockQty) + quantity;
 
     await db.warehouse.update({
       where: { id: itemData.warehouseId },
@@ -37,9 +77,9 @@ export async function POST(request) {
       data: {
         title: itemData.title,
         categoryId: itemData.categoryId,
-        sku: itemData.sku,
+        sku,
         barcode: itemData.barcode,
-        quantity: parseInt(itemData.qty),
+        quantity,
         // unitId: itemData.unitId,
         brandId: itemData.brandId,
         supplierId: itemData.supplierId,
@@ -60,6 +100,13 @@ export async function POST(request) {
     return NextResponse.json(item);
   } catch (error) {
     console.log(error);
+    if (isUniqueConstraintError(error)) {
+      return NextResponse.json(
+        { message: "An item with this SKU already exists in the selected warehouse" },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json(
       { message: "Failed to create item", error },
       { status: 500 }
@@ -82,6 +129,7 @@ export async function GET(request) {
         category: true,
         warehouse: true,
         brand: true,
+        supplier: true,
       },
     });
 

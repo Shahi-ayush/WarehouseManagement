@@ -130,6 +130,13 @@ className='w-full'
 name="qty" 
 register={register} 
 errors={errors}
+type='number'
+min="0"
+step="1"
+registerOptions={{
+  min: { value: 0, message: "Item Quantity cannot be negative" },
+  valueAsNumber: true,
+}}
 className='w-full'
 
 />
@@ -156,6 +163,11 @@ name="buyingPrice"
 register={register} 
 errors={errors}
 type='number'
+min="0"
+step="0.01"
+registerOptions={{
+  min: { value: 0, message: "Buying Price cannot be negative" },
+}}
 className='w-full'
 
 />
@@ -164,6 +176,11 @@ name="sellingPrice"
 register={register} 
 errors={errors}
 type='number'
+min="0"
+step="0.01"
+registerOptions={{
+  min: { value: 0, message: "Selling Price cannot be negative" },
+}}
 className='w-full'
 
 />

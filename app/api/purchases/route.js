@@ -34,7 +34,16 @@ export async function GET() {
       where: {
         userId, // ✅ THIS FIXES EVERYTHING
       },
-      include: { items: true },
+      include: {
+        items: true,
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
 

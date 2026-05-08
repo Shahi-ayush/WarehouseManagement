@@ -1,14 +1,21 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
 import Header from "@/components/dashboard/Header";
 import Leftmenu from "@/components/dashboard/Leftmenu";
-import Login from "../login/page";
+import { useRouter } from "next/navigation";
 
 export default function Layout({ children }) {
   const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/login");
+    }
+  }, [router, status]);
 
   if (status === "loading") {
     return (
@@ -20,7 +27,12 @@ export default function Layout({ children }) {
   }
 
   if (status === "unauthenticated") {
-    return <Login />;
+    return (
+      <div className="flex flex-col justify-center items-center h-screen text-slate-600">
+        <Loader2 className="animate-spin mb-2 text-blue-600" size={32} />
+        <p>Redirecting to login...</p>
+      </div>
+    );
   }
 
   return (

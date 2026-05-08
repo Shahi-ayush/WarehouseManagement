@@ -16,7 +16,7 @@ export default function Pill({ text, variant }) {
 
   const labels = {
     CASH: "Cash",
-    BANK: "Transfer",
+    BANK: "DemoPay",
     KHALTI: "Khalti",
     ESEWA: "eSewa",
     PENDING: "Pending",

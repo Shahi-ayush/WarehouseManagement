@@ -1,8 +1,8 @@
 
 "use client";
 
-import { Bell, ChevronDown, HistoryIcon, LayoutGridIcon, Plus, Users2, Settings, X } from "lucide-react";
-import React, { useState } from "react";
+import { Bell, ChevronDown, HistoryIcon, Plus, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import SearchInput from "./SearchInput";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
@@ -24,17 +24,50 @@ export default function Header() {
 
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [profileName, setProfileName] = useState("");
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/login");
+    }
+  }, [router, status]);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+
+    async function fetchProfileName() {
+      try {
+        const res = await fetch("/api/user/profile", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        setProfileName(data.name || "");
+      } catch (error) {
+        console.error("Failed to load profile name:", error);
+      }
+    }
+
+    const handleProfileUpdate = (event) => {
+      setProfileName(event.detail?.name || "");
+    };
+
+    fetchProfileName();
+    window.addEventListener("admin-profile-updated", handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener("admin-profile-updated", handleProfileUpdate);
+    };
+  }, [status]);
 
   if (status === "loading") {
     return <p className="p-5 text-slate-600 animate-pulse">Loading User...</p>;
   }
 
   if (status === "unauthenticated") {
-    router.push("/login");
+    return <p className="p-5 text-slate-600 animate-pulse">Redirecting to login...</p>;
   }
 
-  const username = session?.user?.name?.split(" ")[0] || "User";
-  const initials = generateInitials(session?.user?.name || "User");
+  const displayName = profileName || session?.user?.name || "User";
+  const initials = generateInitials(displayName);
 
   // Fetch all accounts and filter unverified/unlinked
   const handleBellClick = async () => {
@@ -54,10 +87,9 @@ export default function Header() {
     }
   };
 
-  // // Optional: Remove a notification manually
-  // const dismissNotification = (id) => {
-  //   setNotifications((prev) => prev.filter((n) => n.id !== id));
-  // };
+  const dismissNotification = (id) => {
+    setNotifications((prev) => prev.filter((notification) => notification.id !== id));
+  };
 
   return (
     <div className="bg-slate-200 h-12 flex items-center justify-between px-6 border-b border-slate-300 shadow-sm relative">
@@ -143,7 +175,7 @@ export default function Header() {
         <DropdownMenu>
           <DropdownMenuTrigger>
             <div className="flex items-center gap-2 cursor-pointer">
-              <span className="text-slate-800 font-medium">{username}</span>
+              <span className="max-w-32 truncate text-slate-800 font-medium">{displayName}</span>
               <ChevronDown className="w-4 h-4 text-slate-800" />
             </div>
           </DropdownMenuTrigger>
@@ -153,7 +185,7 @@ export default function Header() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push('/dashboard/home/profile')}>My Profile</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()}>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -173,8 +205,6 @@ export default function Header() {
             </div>
           )}
         </div>
-
-    
       </div>
     </div>
   );

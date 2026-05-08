@@ -8,32 +8,41 @@ import toast from "react-hot-toast";
 
 export default function LoginForm() {
   const router = useRouter();
+  const dashboardPath = "/dashboard/home/overview";
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
   const [loading, setLoading] = useState(false);
-  console.log(loading);
+
   async function onSubmit(data) {
     try {
-      console.log(data.email, data.password);
       setLoading(true);
       const loginData = await signIn("credentials", {
         ...data,
         redirect: false,
+        callbackUrl: dashboardPath,
       });
-      if (loginData?.ok) {
-        setLoading(false);
-        router.push("/dashboard/home/overview");
+
+      if (loginData?.ok && !loginData?.error) {
+        router.replace(loginData.url || dashboardPath);
+        router.refresh();
         return;
       }
+
       setLoading(false);
-      toast.error("Invalid email or password");
+
+      if (loginData?.error) {
+        toast.error("Unable to sign in. Please check your credentials and try again.");
+        return;
+      }
+
+      toast.error("Sign in did not complete. Please try again.");
     } catch (error) {
       setLoading(false);
       console.error("Network Error:", error);
-      toast.error("Its seems something is wrong with your Network");
+      toast.error("Something went wrong while signing in. Please try again.");
     }
   }
 
@@ -116,12 +125,20 @@ export default function LoginForm() {
           Login
         </button>
       )}
-      <Link
-        href="/customer/login"
-        className="block text-center text-sm font-medium text-blue-600 hover:underline dark:text-blue-500"
-      >
-        Login as customer
-      </Link>
+      <div className="grid grid-cols-2 gap-3">
+        <Link
+          href="/customer/login"
+          className="rounded-lg border border-gray-300 px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+        >
+          Customer
+        </Link>
+        <Link
+          href="/login"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-blue-700"
+        >
+          Admin
+        </Link>
+      </div>
 
       <p className="text-sm font-light text-gray-500 dark:text-gray-400">
         Already have an account?{" "}

@@ -292,7 +292,7 @@ const updateSaleStatus = async (saleId, newStatus) => {
       <div className="space-y-3 text-gray-800 mb-6">
         <p><strong>Name:</strong> {customer.name}</p>
         <p><strong>Phone:</strong> {customer.phone}</p>
-        <p><strong>Email:</strong> {customer.email || "-"}</p>
+        {customer.email && <p><strong>Email:</strong> {customer.email}</p>}
         <p><strong>Address:</strong> {customer.address || "-"}</p>
         <p><strong>Created At:</strong> {new Date(customer.createdAt).toLocaleString()}</p>
       </div>

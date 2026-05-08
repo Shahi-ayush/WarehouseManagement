@@ -5,6 +5,10 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 
+function isUniqueConstraintError(error) {
+  return error?.code === "P2002";
+}
+
 // 🟡 GET ITEM BY ID
 export async function GET(request) {
   try {
@@ -52,16 +56,48 @@ export async function PUT(request) {
     }
 
     const itemData = await request.json();
+    const sku = itemData.sku?.trim();
+    const quantity = parseInt(itemData.qty);
+
+    if (!sku || !itemData.warehouseId) {
+      return NextResponse.json(
+        { message: "SKU and warehouse are required" },
+        { status: 400 }
+      );
+    }
+
+    if (!Number.isInteger(quantity) || quantity < 0) {
+      return NextResponse.json(
+        { message: "Item Quantity cannot be negative" },
+        { status: 400 }
+      );
+    }
+
+    const duplicateItem = await db.item.findFirst({
+      where: {
+        sku,
+        warehouseId: itemData.warehouseId,
+        userId: session.user.id,
+        NOT: { id },
+      },
+      select: { id: true },
+    });
+
+    if (duplicateItem) {
+      return NextResponse.json(
+        { message: "An item with this SKU already exists in the selected warehouse" },
+        { status: 409 }
+      );
+    }
 
     const updatedItem = await db.item.update({
       where: { id },
       data: {
         title: itemData.title,
         categoryId: itemData.categoryId,
-        sku: itemData.sku,
+        sku,
         // barcode: itemData.barcode,
-        quantity: parseInt(itemData.qty),
-        unitId: itemData.unitId,
+        quantity,
         brandId: itemData.brandId,
         supplierId: itemData.supplierId,
         buyingPrice: parseFloat(itemData.buyingPrice),
@@ -80,6 +116,13 @@ export async function PUT(request) {
     return NextResponse.json(updatedItem);
   } catch (error) {
     console.log(error);
+    if (isUniqueConstraintError(error)) {
+      return NextResponse.json(
+        { message: "An item with this SKU already exists in the selected warehouse" },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json(
       { message: "Failed to update the item", error },
       { status: 500 }

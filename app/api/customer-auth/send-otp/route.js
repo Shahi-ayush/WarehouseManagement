@@ -1,6 +1,6 @@
 
 import { db } from "@/lib/db";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
