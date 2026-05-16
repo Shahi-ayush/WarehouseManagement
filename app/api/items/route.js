@@ -9,6 +9,20 @@ function isUniqueConstraintError(error) {
   return error?.code === "P2002";
 }
 
+function parseWishlistRequests(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+
+  const parsed = {};
+  for (const [itemId, qty] of Object.entries(raw)) {
+    const quantity = Number.parseInt(qty, 10);
+    if (Number.isFinite(quantity) && quantity > 0) {
+      parsed[itemId] = quantity;
+    }
+  }
+
+  return parsed;
+}
+
 // 🟢 CREATE ITEM (POST)
 export async function POST(request) {
   try {
@@ -157,6 +171,38 @@ export async function DELETE(request) {
     const item = await db.item.findUnique({ where: { id } });
     if (!item || item.userId !== session.user.id) {
       return NextResponse.json({ message: "Not authorized" }, { status: 403 });
+    }
+
+    if (item.quantity !== 0) {
+      return NextResponse.json(
+        { message: "Item cannot be deleted while quantity is greater than 0." },
+        { status: 400 }
+      );
+    }
+
+    const customers = await db.customer.findMany({
+      where: { userId: session.user.id },
+      select: {
+        wishlist: true,
+        purchasedItems: true,
+      },
+    });
+
+    const isItemInWishlist = customers.some((customer) => {
+      if ((customer.wishlist || []).includes(id)) return true;
+
+      const requestedItems = parseWishlistRequests(customer.purchasedItems);
+      return (requestedItems[id] || 0) > 0;
+    });
+
+    if (isItemInWishlist) {
+      return NextResponse.json(
+        {
+          message:
+            "Item cannot be deleted because it is still present in a customer wishlist.",
+        },
+        { status: 400 }
+      );
     }
 
     const deletedItem = await db.item.delete({ where: { id } });

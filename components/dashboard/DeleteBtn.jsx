@@ -11,6 +11,7 @@ export default function DeleteBtn({id,endpoint,onSuccess}) {
 const router=useRouter()
 //const confirmed = confirm("Are you sure ?")
 async function handleDelete(){
+   if (loading) return;
    setLoading(true)
 
 Swal.fire({
@@ -28,7 +29,6 @@ Swal.fire({
         method:"DELETE",
     }
 )
-console.log(res)
 
 if(res.ok){
   router.refresh()
@@ -38,7 +38,14 @@ if(res.ok){
   toast.success("Deleted Successfully")
 } else {
   const errorData = await res.json().catch(() => ({}));
-  toast.error(errorData.message || "Failed to delete item");
+  const errorMessage = errorData.message || "Failed to delete item";
+  toast.error(errorMessage);
+  await Swal.fire({
+    title: "Delete blocked",
+    text: errorMessage,
+    icon: "error",
+    confirmButtonColor: "#d33",
+  });
 }
 
 setLoading(false)
@@ -51,9 +58,9 @@ setLoading(false)
 
 }
   return (
-          <button onClick={handleDelete} className="font-medium text-red-600 dark:text-red-500 flex items-center space-x-1">
+          <button disabled={loading} onClick={handleDelete} className="font-medium text-red-600 dark:text-red-500 flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed">
                     <Trash2 className="w-4 h-4" />
-                    <span>Delete</span>
+                    <span>{loading ? "Deleting..." : "Delete"}</span>
                   </button>
 
 //  <>
